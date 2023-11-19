@@ -2,9 +2,9 @@ package server
 
 import (
 	"github.com/go-chi/chi/v5"
+	"github.com/tank4gun/go-musthave-diploma-tpl/internal/config"
 	"github.com/tank4gun/go-musthave-diploma-tpl/internal/handlers"
 	"github.com/tank4gun/go-musthave-diploma-tpl/internal/storage"
-	"github.com/tank4gun/go-musthave-diploma-tpl/internal/varprs"
 	"net/http"
 )
 
@@ -23,7 +23,7 @@ func CreateServer(storageForHandler storage.Storage) *http.Server {
 	router.Get("/api/user/withdrawals", handlerWithStorage.GetWithdrawals)
 
 	server := &http.Server{
-		Addr:    varprs.ServerAddr,
+		Addr:    config.ServerAddr,
 		Handler: router,
 	}
 	return server

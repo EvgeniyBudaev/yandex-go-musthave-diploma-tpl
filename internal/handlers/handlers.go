@@ -6,8 +6,8 @@ import (
 	"crypto/sha256"
 	"encoding/hex"
 	"encoding/json"
+	"github.com/tank4gun/go-musthave-diploma-tpl/internal/config"
 	"github.com/tank4gun/go-musthave-diploma-tpl/internal/storage"
-	"github.com/tank4gun/go-musthave-diploma-tpl/internal/varprs"
 	"io"
 	"log"
 	"net/http"
@@ -115,7 +115,7 @@ func CheckAuth(next http.Handler) http.Handler {
 func (strg *HandlerWithStorage) GetStatusesDaemon() {
 	for orderNumber := range strg.ordersToProcess {
 		log.Printf("Got order %s to process", orderNumber)
-		response, err := strg.client.Get(varprs.AccrualSysAddr + "/api/orders/" + orderNumber)
+		response, err := strg.client.Get(config.AccrualSysAddr + "/api/orders/" + orderNumber)
 		if err != nil {
 			log.Printf("Got error %s", err.Error())
 			continue

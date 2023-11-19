@@ -1,4 +1,4 @@
-package varprs
+package config
 
 import (
 	"flag"

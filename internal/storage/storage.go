@@ -59,10 +59,10 @@ type Storage interface {
 	Register(registerData Auth) (string, int)
 	GetUserByLogin(authData Auth) (Auth, int)
 	GetOrdersByUser(userID string) ([]Order, int)
-	AddOrderByUser(externalOrderID string, userID string) int
+	AddOrderForUser(externalOrderID string, userID string) int
 	GetUserBalance(userID string) (UserBalance, int)
-	AddWithdrawalByUser(userID string, withdrawal Withdrawal) int
-	GetWithdrawalsByUser(userID string) ([]Withdrawal, int)
+	AddWithdrawalForUser(userID string, withdrawal Withdrawal) int
+	GetWithdrawalsForUser(userID string) ([]Withdrawal, int)
 	GetOrdersInProgress() ([]Order, int)
 	UpdateOrder(order OrderFromBlackBox) int
 }
@@ -112,7 +112,7 @@ func (s *DBStorage) GetUserByLogin(a Auth) (Auth, int) {
 	return userData, http.StatusOK
 }
 
-func (s *DBStorage) AddOrderByUser(id string, u string) int {
+func (s *DBStorage) AddOrderForUser(id string, u string) int {
 	row := s.db.QueryRow("SELECT user_id FROM \"order\" WHERE external_id = $1", id)
 	var orderUserID sql.NullString
 	err := row.Scan(&orderUserID)
@@ -207,7 +207,7 @@ func (s *DBStorage) GetUserBalance(u string) (UserBalance, int) {
 	return resultBalance, http.StatusOK
 }
 
-func (s *DBStorage) AddWithdrawalByUser(u string, w Withdrawal) int {
+func (s *DBStorage) AddWithdrawalForUser(u string, w Withdrawal) int {
 	userBalance, errCode := s.GetUserBalance(u)
 	if errCode != http.StatusOK {
 		log.Printf("error while getting status %v", errCode)
@@ -231,7 +231,7 @@ func (s *DBStorage) AddWithdrawalByUser(u string, w Withdrawal) int {
 	return http.StatusOK
 }
 
-func (s *DBStorage) GetWithdrawalsByUser(u string) ([]Withdrawal, int) {
+func (s *DBStorage) GetWithdrawalsForUser(u string) ([]Withdrawal, int) {
 	rows, err := s.db.Query("SELECT external_id, amount, registered_at FROM withdrawal WHERE user_id = $1", u)
 	if err != nil {
 		log.Printf("error %s", err.Error())

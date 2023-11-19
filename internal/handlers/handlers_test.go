@@ -31,20 +31,20 @@ func TestValidateOrder(t *testing.T) {
 	}{
 		{
 			name:        "Not integer order",
-			order:       "AAA",
+			order:       "SomeText",
 			resultOrder: 0,
 			errCode:     http.StatusBadRequest,
 		},
 		{
 			name:        "Negative order",
-			order:       "-100",
+			order:       "-5",
 			resultOrder: 0,
 			errCode:     http.StatusBadRequest,
 		},
 		{
 			name:        "Correct order with odd digit quantity",
-			order:       "133",
-			resultOrder: 133,
+			order:       "101",
+			resultOrder: 101,
 			errCode:     http.StatusOK,
 		},
 		{
@@ -55,13 +55,13 @@ func TestValidateOrder(t *testing.T) {
 		},
 		{
 			name:        "Correct order with even digit quantity",
-			order:       "5843",
-			resultOrder: 5843,
+			order:       "4953",
+			resultOrder: 4953,
 			errCode:     http.StatusOK,
 		},
 		{
 			name:        "Incorrect order with even digit quantity",
-			order:       "4723",
+			order:       "3743",
 			resultOrder: 0,
 			errCode:     http.StatusUnprocessableEntity,
 		},

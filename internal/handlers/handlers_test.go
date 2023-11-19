@@ -79,7 +79,7 @@ func TestRegisterHandler(t *testing.T) {
 	tt := []struct {
 		name                string
 		want                wantResponse
-		registerData        storage.UserAuthData
+		registerData        storage.Auth
 		mockResponseID      string
 		mockResponseErrCode int
 	}{
@@ -90,7 +90,7 @@ func TestRegisterHandler(t *testing.T) {
 				"",
 				``,
 			},
-			storage.UserAuthData{Login: "NewLogin", Password: "MyPassword"},
+			storage.Auth{Login: "NewLogin", Password: "MyPassword"},
 			"ad29ba3c-7eba-4223-9635-fc71e9c1fa28",
 			http.StatusOK,
 		},
@@ -101,7 +101,7 @@ func TestRegisterHandler(t *testing.T) {
 				"text/plain; charset=utf-8",
 				"Could not register user\n",
 			},
-			storage.UserAuthData{Login: "NewLogin", Password: "MyPassword"},
+			storage.Auth{Login: "NewLogin", Password: "MyPassword"},
 			"",
 			http.StatusFailedDependency,
 		},
@@ -112,7 +112,7 @@ func TestRegisterHandler(t *testing.T) {
 				"text/plain; charset=utf-8",
 				"Could not register user\n",
 			},
-			storage.UserAuthData{Login: "NewLogin", Password: "MyPassword"},
+			storage.Auth{Login: "NewLogin", Password: "MyPassword"},
 			"",
 			http.StatusInternalServerError,
 		},

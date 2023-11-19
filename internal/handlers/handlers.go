@@ -163,7 +163,7 @@ func (strg *HandlerWithStorage) Register(w http.ResponseWriter, r *http.Request)
 		http.Error(w, "Got err while reading body", http.StatusBadRequest)
 		return
 	}
-	var authData storage.UserAuthData
+	var authData storage.Auth
 	log.Printf("DATA: %v", r.Body)
 	err = json.Unmarshal(jsonBody, &authData)
 	if err != nil {
@@ -195,7 +195,7 @@ func (strg *HandlerWithStorage) Login(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Got err while reading body", http.StatusBadRequest)
 		return
 	}
-	var authData storage.UserAuthData
+	var authData storage.Auth
 	err = json.Unmarshal(jsonData, &authData)
 	if err != nil {
 		log.Printf("Could not unmarshal body: %s", err.Error())

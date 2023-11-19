@@ -108,10 +108,10 @@ func (mr *MockStorageMockRecorder) GetUserBalance(arg0 interface{}) *gomock.Call
 }
 
 // GetUserByLogin mocks base method.
-func (m *MockStorage) GetUserByLogin(arg0 storage.UserAuthData) (storage.UserAuthData, int) {
+func (m *MockStorage) GetUserByLogin(arg0 storage.Auth) (storage.Auth, int) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetUserByLogin", arg0)
-	ret0, _ := ret[0].(storage.UserAuthData)
+	ret0, _ := ret[0].(storage.Auth)
 	ret1, _ := ret[1].(int)
 	return ret0, ret1
 }
@@ -138,7 +138,7 @@ func (mr *MockStorageMockRecorder) GetWithdrawalsForUser(arg0 interface{}) *gomo
 }
 
 // Register mocks base method.
-func (m *MockStorage) Register(arg0 storage.UserAuthData) (string, int) {
+func (m *MockStorage) Register(arg0 storage.Auth) (string, int) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Register", arg0)
 	ret0, _ := ret[0].(string)

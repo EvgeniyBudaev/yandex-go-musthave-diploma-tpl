@@ -9,7 +9,7 @@ import (
 	"time"
 )
 
-type UserAuthData struct {
+type Auth struct {
 	Login    string `json:"login"`
 	Password string `json:"password"`
 	UserID   string `json:"userID,omitempty"`
@@ -56,8 +56,8 @@ func GetStorage(dbDSN string) Storage {
 }
 
 type Storage interface {
-	Register(registerData UserAuthData) (string, int)
-	GetUserByLogin(authData UserAuthData) (UserAuthData, int)
+	Register(registerData Auth) (string, int)
+	GetUserByLogin(authData Auth) (Auth, int)
 	GetOrdersByUser(userID string) ([]Order, int)
 	AddOrderForUser(externalOrderID string, userID string) int
 	GetUserBalance(userID string) (UserBalance, int)
@@ -71,8 +71,8 @@ type DBStorage struct {
 	db *sql.DB
 }
 
-func (strg *DBStorage) Register(registerData UserAuthData) (string, int) {
-	row := strg.db.QueryRow("SELECT id FROM \"user\" WHERE \"login\" = $1", registerData.Login)
+func (s *DBStorage) Register(a Auth) (string, int) {
+	row := s.db.QueryRow("SELECT id FROM \"user\" WHERE \"login\" = $1", a.Login)
 	var userID sql.NullString
 	err := row.Scan(&userID)
 	if err != nil && userID.Valid {
@@ -80,14 +80,14 @@ func (strg *DBStorage) Register(registerData UserAuthData) (string, int) {
 		return "", http.StatusInternalServerError
 	}
 	if userID.Valid {
-		log.Printf("Got existing user with login %s", registerData.Login)
+		log.Printf("Got existing user with login %s", a.Login)
 		return "", http.StatusFailedDependency
 	}
 	h := sha256.New()
-	h.Write([]byte(registerData.Password))
+	h.Write([]byte(a.Password))
 	passwordHash := hex.EncodeToString(h.Sum(nil))
 	log.Printf("Got password hash %s", passwordHash)
-	row = strg.db.QueryRow("INSERT INTO \"user\" (\"login\", password_hash) VALUES ($1, $2) RETURNING id", registerData.Login, passwordHash)
+	row = s.db.QueryRow("INSERT INTO \"user\" (\"login\", password_hash) VALUES ($1, $2) RETURNING id", a.Login, passwordHash)
 	if err := row.Scan(&userID); err != nil {
 		log.Printf("Error %s", err.Error())
 		return "", http.StatusInternalServerError
@@ -102,19 +102,19 @@ func (strg *DBStorage) Register(registerData UserAuthData) (string, int) {
 	return "", http.StatusInternalServerError
 }
 
-func (strg *DBStorage) GetUserByLogin(authData UserAuthData) (UserAuthData, int) {
-	row := strg.db.QueryRow("SELECT id, login, password_hash FROM \"user\" WHERE login = $1", authData.Login)
-	var userData UserAuthData
+func (s *DBStorage) GetUserByLogin(a Auth) (Auth, int) {
+	row := s.db.QueryRow("SELECT id, login, password_hash FROM \"user\" WHERE login = $1", a.Login)
+	var userData Auth
 	err := row.Scan(&userData.UserID, &userData.Login, &userData.Password)
 	if err != nil {
-		log.Printf("Could not get user data for login %s", authData.Login)
+		log.Printf("Could not get user data for login %s", a.Login)
 		return userData, http.StatusUnauthorized
 	}
 	return userData, http.StatusOK
 }
 
-func (strg *DBStorage) AddOrderForUser(externalOrderID string, userID string) int {
-	row := strg.db.QueryRow("SELECT user_id FROM \"order\" WHERE external_id = $1", externalOrderID)
+func (s *DBStorage) AddOrderForUser(id string, u string) int {
+	row := s.db.QueryRow("SELECT user_id FROM \"order\" WHERE external_id = $1", id)
 	var orderUserID sql.NullString
 	err := row.Scan(&orderUserID)
 	if err != nil && orderUserID.Valid {
@@ -122,18 +122,18 @@ func (strg *DBStorage) AddOrderForUser(externalOrderID string, userID string) in
 		return http.StatusInternalServerError
 	}
 	if orderUserID.Valid {
-		if orderUserID.String == userID {
-			log.Printf("Got same userID %s for orderID %s", userID, externalOrderID)
+		if orderUserID.String == u {
+			log.Printf("Got same userID %s for orderID %s", u, id)
 			return http.StatusOK
 		} else {
-			log.Printf("Got another userID %s (instead of %s) for orderID %s", orderUserID.String, userID, externalOrderID)
+			log.Printf("Got another userID %s (instead of %s) for orderID %s", orderUserID.String, u, id)
 			return http.StatusConflict
 		}
 	}
-	log.Printf("Order with id %v not found in DB, should add it", externalOrderID)
-	row = strg.db.QueryRow(
+	log.Printf("Order with id %v not found in DB, should add it", id)
+	row = s.db.QueryRow(
 		"INSERT INTO \"order\" (user_id, status, external_id) VALUES ($1, $2, $3) RETURNING id",
-		userID, "NEW", externalOrderID,
+		u, "NEW", id,
 	)
 	var orderID string
 	err = row.Scan(&orderID)
@@ -145,8 +145,8 @@ func (strg *DBStorage) AddOrderForUser(externalOrderID string, userID string) in
 	return http.StatusAccepted
 }
 
-func (strg *DBStorage) GetOrdersByUser(userID string) ([]Order, int) {
-	rows, err := strg.db.Query("SELECT external_id, status, amount, registered_at FROM \"order\" WHERE user_id = $1", userID)
+func (s *DBStorage) GetOrdersByUser(u string) ([]Order, int) {
+	rows, err := s.db.Query("SELECT external_id, status, amount, registered_at FROM \"order\" WHERE user_id = $1", u)
 	if err != nil {
 		log.Printf("Got error: %s", err.Error())
 		return nil, http.StatusInternalServerError
@@ -173,10 +173,10 @@ func (strg *DBStorage) GetOrdersByUser(userID string) ([]Order, int) {
 	return orders, http.StatusOK
 }
 
-func (strg *DBStorage) GetUserBalance(userID string) (UserBalance, int) {
-	log.Printf("Got userID %s", userID)
-	sumOrdersRow := strg.db.QueryRow("SELECT sum(amount) FROM \"order\" WHERE user_id = $1", userID)
-	sumWithdrawalsRow := strg.db.QueryRow("SELECT sum(amount) FROM withdrawal WHERE user_id = $1", userID)
+func (s *DBStorage) GetUserBalance(u string) (UserBalance, int) {
+	log.Printf("Got userID %s", u)
+	sumOrdersRow := s.db.QueryRow("SELECT sum(amount) FROM \"order\" WHERE user_id = $1", u)
+	sumWithdrawalsRow := s.db.QueryRow("SELECT sum(amount) FROM withdrawal WHERE user_id = $1", u)
 	var sumOrders sql.NullFloat64
 	var sumWithdrawals sql.NullFloat64
 	err := sumOrdersRow.Scan(&sumOrders)
@@ -208,20 +208,20 @@ func (strg *DBStorage) GetUserBalance(userID string) (UserBalance, int) {
 	return resultBalance, http.StatusOK
 }
 
-func (strg *DBStorage) AddWithdrawalForUser(userID string, withdrawal Withdrawal) int {
-	userBalance, errCode := strg.GetUserBalance(userID)
+func (s *DBStorage) AddWithdrawalForUser(u string, w Withdrawal) int {
+	userBalance, errCode := s.GetUserBalance(u)
 	if errCode != http.StatusOK {
 		log.Printf("Got error while getting status %v", errCode)
 		return errCode
 	}
-	if userBalance.Orders < withdrawal.Sum {
-		log.Printf("Got less bonus points %v than expected %v", userBalance.Orders, withdrawal.Sum)
+	if userBalance.Orders < w.Sum {
+		log.Printf("Got less bonus points %v than expected %v", userBalance.Orders, w.Sum)
 		return http.StatusPaymentRequired
 	}
 	var withdrawalID string
-	row := strg.db.QueryRow(
+	row := s.db.QueryRow(
 		"INSERT INTO withdrawal (user_id, amount, external_id) VALUES ($1, $2, $3) RETURNING id",
-		userID, withdrawal.Sum, withdrawal.Order,
+		u, w.Sum, w.Order,
 	)
 	err := row.Scan(&withdrawalID)
 	if err != nil {
@@ -232,8 +232,8 @@ func (strg *DBStorage) AddWithdrawalForUser(userID string, withdrawal Withdrawal
 	return http.StatusOK
 }
 
-func (strg *DBStorage) GetWithdrawalsForUser(userID string) ([]Withdrawal, int) {
-	rows, err := strg.db.Query("SELECT external_id, amount, registered_at FROM withdrawal WHERE user_id = $1", userID)
+func (s *DBStorage) GetWithdrawalsForUser(u string) ([]Withdrawal, int) {
+	rows, err := s.db.Query("SELECT external_id, amount, registered_at FROM withdrawal WHERE user_id = $1", u)
 	if err != nil {
 		log.Printf("Got error %s", err.Error())
 		return make([]Withdrawal, 0), http.StatusInternalServerError
@@ -256,8 +256,8 @@ func (strg *DBStorage) GetWithdrawalsForUser(userID string) ([]Withdrawal, int) 
 	return withdrawals, http.StatusOK
 }
 
-func (strg *DBStorage) GetOrdersInProgress() ([]Order, int) {
-	rows, err := strg.db.Query("SELECT external_id, status, amount from \"order\" where status not in ('INVALID', 'PROCESSED')")
+func (s *DBStorage) GetOrdersInProgress() ([]Order, int) {
+	rows, err := s.db.Query("SELECT external_id, status, amount from \"order\" where status not in ('INVALID', 'PROCESSED')")
 
 	if err != nil {
 		log.Printf("Got error %s", err.Error())
@@ -286,8 +286,8 @@ func (strg *DBStorage) GetOrdersInProgress() ([]Order, int) {
 	return orders, http.StatusOK
 }
 
-func (strg *DBStorage) UpdateOrder(order OrderFromBlackBox) int {
-	tx, err := strg.db.Begin()
+func (s *DBStorage) UpdateOrder(order OrderFromBlackBox) int {
+	tx, err := s.db.Begin()
 	if err != nil {
 		log.Printf("Got error %s", err.Error())
 		return http.StatusInternalServerError

@@ -30,37 +30,37 @@ func TestValidateOrder(t *testing.T) {
 		errCode     int
 	}{
 		{
-			name:        "Not integer order",
+			name:        "not integer order",
 			order:       "SomeText",
 			resultOrder: 0,
 			errCode:     http.StatusBadRequest,
 		},
 		{
-			name:        "Negative order",
+			name:        "negative order",
 			order:       "-5",
 			resultOrder: 0,
 			errCode:     http.StatusBadRequest,
 		},
 		{
-			name:        "Correct order with odd digit quantity",
+			name:        "correct order with odd digit quantity",
 			order:       "101",
 			resultOrder: 101,
 			errCode:     http.StatusOK,
 		},
 		{
-			name:        "Incorrect order with odd digit quantity",
+			name:        "incorrect order with odd digit quantity",
 			order:       "124",
 			resultOrder: 0,
 			errCode:     http.StatusUnprocessableEntity,
 		},
 		{
-			name:        "Correct order with even digit quantity",
+			name:        "correct order with even digit quantity",
 			order:       "4953",
 			resultOrder: 4953,
 			errCode:     http.StatusOK,
 		},
 		{
-			name:        "Incorrect order with even digit quantity",
+			name:        "incorrect order with even digit quantity",
 			order:       "3743",
 			resultOrder: 0,
 			errCode:     http.StatusUnprocessableEntity,
@@ -90,8 +90,8 @@ func TestRegisterHandler(t *testing.T) {
 				"",
 				``,
 			},
-			storage.Auth{Login: "NewLogin", Password: "MyPassword"},
-			"ad29ba3c-7eba-4223-9635-fc71e9c1fa28",
+			storage.Auth{Login: "TestLogin", Password: "TestPassword"},
+			"5f0319ee-bd23-40a2-9b56-f6d21726c425",
 			http.StatusOK,
 		},
 		{
@@ -101,7 +101,7 @@ func TestRegisterHandler(t *testing.T) {
 				"text/plain; charset=utf-8",
 				"Could not register user\n",
 			},
-			storage.Auth{Login: "NewLogin", Password: "MyPassword"},
+			storage.Auth{Login: "TestLogin", Password: "TestPassword"},
 			"",
 			http.StatusFailedDependency,
 		},
@@ -112,7 +112,7 @@ func TestRegisterHandler(t *testing.T) {
 				"text/plain; charset=utf-8",
 				"Could not register user\n",
 			},
-			storage.Auth{Login: "NewLogin", Password: "MyPassword"},
+			storage.Auth{Login: "TestLogin", Password: "TestPassword"},
 			"",
 			http.StatusInternalServerError,
 		},
@@ -141,7 +141,7 @@ func TestRegisterHandler(t *testing.T) {
 						assert.Equal(t, hex.EncodeToString(append([]byte(tc.mockResponseID)[:], sign[:]...)), cookie.Value)
 						break
 					}
-					assert.Fail(t, "Got no cookies for UserID")
+					assert.Fail(t, "get no cookies for UserID")
 				}
 			}
 			responseBody, err := io.ReadAll(result.Body)

@@ -29,7 +29,7 @@ type OrderFromDB struct {
 	UploadedAt time.Time
 }
 
-type OrderFromBlackBox struct {
+type OrderByStatus struct {
 	Order   string  `json:"order"`
 	Status  string  `json:"status"`
 	Accrual float64 `json:"accrual,omitempty"`
@@ -49,7 +49,7 @@ type Withdrawal struct {
 func GetStorage(dbDSN string) Storage {
 	db, err := sql.Open("pgx", dbDSN)
 	if err != nil {
-		log.Printf("Got error while starting db %s", err.Error())
+		log.Printf("error while starting db %s", err.Error())
 		return nil
 	}
 	return &DBStorage{db}
@@ -64,7 +64,7 @@ type Storage interface {
 	AddWithdrawalForUser(userID string, withdrawal Withdrawal) int
 	GetWithdrawalsForUser(userID string) ([]Withdrawal, int)
 	GetOrdersInProgress() ([]Order, int)
-	UpdateOrder(order OrderFromBlackBox) int
+	UpdateOrder(order OrderByStatus) int
 }
 
 type DBStorage struct {
@@ -151,7 +151,7 @@ func (s *DBStorage) GetOrdersByUser(u string) ([]Order, int) {
 		return nil, http.StatusInternalServerError
 	}
 	defer rows.Close()
-	orders := make([]Order, 0)
+	orderList := make([]Order, 0)
 	for rows.Next() {
 		var orderFromDBVal OrderFromDB
 		err := rows.Scan(&orderFromDBVal.Number, &orderFromDBVal.Status, &orderFromDBVal.Accrual, &orderFromDBVal.UploadedAt)
@@ -163,13 +163,13 @@ func (s *DBStorage) GetOrdersByUser(u string) ([]Order, int) {
 		if orderFromDBVal.Accrual.Valid {
 			order.Accrual = orderFromDBVal.Accrual.Float64
 		}
-		orders = append(orders, order)
+		orderList = append(orderList, order)
 	}
 	if err := rows.Err(); err != nil {
 		log.Printf("error: %s", err.Error())
 		return nil, http.StatusInternalServerError
 	}
-	return orders, http.StatusOK
+	return orderList, http.StatusOK
 }
 
 func (s *DBStorage) GetUserBalance(u string) (UserBalance, int) {
@@ -180,7 +180,7 @@ func (s *DBStorage) GetUserBalance(u string) (UserBalance, int) {
 	var sumWithdrawals sql.NullFloat64
 	err := sumOrdersRow.Scan(&sumOrders)
 	if err != nil && sumOrders.Valid {
-		log.Printf("errort get sumOrders: %s", err.Error())
+		log.Printf("error get sumOrders: %s", err.Error())
 		return UserBalance{0, 0}, http.StatusInternalServerError
 	}
 	var resultBalance UserBalance
@@ -197,7 +197,7 @@ func (s *DBStorage) GetUserBalance(u string) (UserBalance, int) {
 		return UserBalance{0, 0}, http.StatusInternalServerError
 	}
 	if !sumWithdrawals.Valid {
-		log.Printf("Got empty resultBalance")
+		log.Printf("resultBalance is empty")
 		resultBalance.Withdrawn = 0
 	} else {
 		resultBalance.Withdrawn = sumWithdrawals.Float64
@@ -238,7 +238,7 @@ func (s *DBStorage) GetWithdrawalsForUser(u string) ([]Withdrawal, int) {
 		return make([]Withdrawal, 0), http.StatusInternalServerError
 	}
 	defer rows.Close()
-	withdrawals := make([]Withdrawal, 0)
+	withdrawalList := make([]Withdrawal, 0)
 	for rows.Next() {
 		var withdrawal Withdrawal
 		err = rows.Scan(&withdrawal.Order, &withdrawal.Sum, &withdrawal.ProcessedAt)
@@ -246,13 +246,13 @@ func (s *DBStorage) GetWithdrawalsForUser(u string) ([]Withdrawal, int) {
 			log.Printf("error %s", err.Error())
 			return make([]Withdrawal, 0), http.StatusInternalServerError
 		}
-		withdrawals = append(withdrawals, withdrawal)
+		withdrawalList = append(withdrawalList, withdrawal)
 	}
 	if err := rows.Err(); err != nil {
 		log.Printf("error: %s", err.Error())
 		return nil, http.StatusInternalServerError
 	}
-	return withdrawals, http.StatusOK
+	return withdrawalList, http.StatusOK
 }
 
 func (s *DBStorage) GetOrdersInProgress() ([]Order, int) {
@@ -263,7 +263,7 @@ func (s *DBStorage) GetOrdersInProgress() ([]Order, int) {
 		return make([]Order, 0), http.StatusInternalServerError
 	}
 	defer rows.Close()
-	orders := make([]Order, 0)
+	orderList := make([]Order, 0)
 	for rows.Next() {
 		var orderFromDBVal OrderFromDB
 		err = rows.Scan(&orderFromDBVal.Number, &orderFromDBVal.Status, &orderFromDBVal.Accrual)
@@ -275,29 +275,29 @@ func (s *DBStorage) GetOrdersInProgress() ([]Order, int) {
 		if orderFromDBVal.Accrual.Valid {
 			order.Accrual = orderFromDBVal.Accrual.Float64
 		}
-		orders = append(orders, order)
+		orderList = append(orderList, order)
 	}
 	if err := rows.Err(); err != nil {
 		log.Printf("error: %s", err.Error())
 		return nil, http.StatusInternalServerError
 	}
-	log.Printf("orders %v", orders)
-	return orders, http.StatusOK
+	log.Printf("orders %v", orderList)
+	return orderList, http.StatusOK
 }
 
-func (s *DBStorage) UpdateOrder(order OrderFromBlackBox) int {
+func (s *DBStorage) UpdateOrder(o OrderByStatus) int {
 	tx, err := s.db.Begin()
 	if err != nil {
 		log.Printf("error %s", err.Error())
 		return http.StatusInternalServerError
 	}
-	URLstmt, err := tx.Prepare("UPDATE \"order\" SET status = $1, amount = $2 where external_id = $3")
+	stmt, err := tx.Prepare("UPDATE \"order\" SET status = $1, amount = $2 where external_id = $3")
 	if err != nil {
 		log.Printf("error %s", err.Error())
 		return http.StatusInternalServerError
 	}
-	defer URLstmt.Close()
-	if _, err := URLstmt.Exec(order.Status, order.Accrual, order.Order); err != nil {
+	defer stmt.Close()
+	if _, err := stmt.Exec(o.Status, o.Accrual, o.Order); err != nil {
 		if err = tx.Rollback(); err != nil {
 			log.Fatalf("insert to url, need rollback, %v", err)
 			return http.StatusInternalServerError

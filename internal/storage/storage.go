@@ -29,7 +29,7 @@ type OrderFromDB struct {
 	UploadedAt time.Time
 }
 
-type OrderByStatus struct {
+type OrderFromBlackBox struct {
 	Order   string  `json:"order"`
 	Status  string  `json:"status"`
 	Accrual float64 `json:"accrual,omitempty"`
@@ -64,7 +64,7 @@ type Storage interface {
 	AddWithdrawalForUser(userID string, withdrawal Withdrawal) int
 	GetWithdrawalsForUser(userID string) ([]Withdrawal, int)
 	GetOrdersInProgress() ([]Order, int)
-	UpdateOrder(order OrderByStatus) int
+	UpdateOrder(order OrderFromBlackBox) int
 }
 
 type DBStorage struct {
@@ -285,7 +285,7 @@ func (s *DBStorage) GetOrdersInProgress() ([]Order, int) {
 	return orderList, http.StatusOK
 }
 
-func (s *DBStorage) UpdateOrder(o OrderByStatus) int {
+func (s *DBStorage) UpdateOrder(o OrderFromBlackBox) int {
 	tx, err := s.db.Begin()
 	if err != nil {
 		log.Printf("error %s", err.Error())

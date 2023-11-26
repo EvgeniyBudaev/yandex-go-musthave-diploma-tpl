@@ -7,9 +7,10 @@ import (
 )
 
 type Config struct {
-	ServerAddr     string `env:"RUN_ADDRESS"`
-	DBURI          string `env:"DATABASE_URI"`
-	AccrualSysAddr string `env:"ACCRUAL_SYSTEM_ADDRESS"`
+	ServerAddr       string `env:"RUN_ADDRESS"`
+	DBURI            string `env:"DATABASE_URI"`
+	AccrualSysAddr   string `env:"ACCRUAL_SYSTEM_ADDRESS"`
+	MigrateSourceURL string `env:"MIGRATE_SOURCE_URL"`
 }
 
 var config Config
@@ -18,6 +19,8 @@ func Init() {
 	flag.StringVar(&config.ServerAddr, "a", "", "GopherMart server address")
 	flag.StringVar(&config.DBURI, "d", "", "GopherMart database address")
 	flag.StringVar(&config.AccrualSysAddr, "r", "", "Accrual system address")
+	flag.StringVar(&config.MigrateSourceURL, "m", "file://internal/db/migrations",
+		"Migrate source URL")
 	flag.Parse()
 
 	ServerAddrEnv := os.Getenv("RUN_ADDRESS")
@@ -35,6 +38,11 @@ func Init() {
 		config.AccrualSysAddr = AccrualSysAddrEnv
 	}
 
+	MigrateSourceURLEnv := os.Getenv("MIGRATE_SOURCE_URL")
+	if MigrateSourceURLEnv != "" {
+		config.MigrateSourceURL = MigrateSourceURLEnv
+	}
+
 	log.Printf("Got ServerAddr %s, DBURI %s, AccrualSysAddr %s to run GopherMart", config.ServerAddr,
 		config.DBURI, config.AccrualSysAddr)
 }
@@ -49,4 +57,8 @@ func GetDBURI() string {
 
 func GetAccrualSysAddr() string {
 	return config.AccrualSysAddr
+}
+
+func GetMigrateSourceURL() string {
+	return config.MigrateSourceURL
 }

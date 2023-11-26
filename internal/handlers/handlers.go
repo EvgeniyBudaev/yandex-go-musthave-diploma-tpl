@@ -248,12 +248,10 @@ func (strg *HandlerWithStorage) AddOrder(w http.ResponseWriter, r *http.Request)
 		http.Error(w, "error add order into db", http.StatusInternalServerError)
 		return
 	}
-	if errCode == http.StatusAccepted {
-		go func(orderNumber string) {
-			strg.ordersToProcess <- orderNumber
-		}(string(data))
-	}
-	w.WriteHeader(http.StatusAccepted)
+	go func(orderNumber string) {
+		strg.ordersToProcess <- orderNumber
+	}(string(data))
+	w.WriteHeader(http.StatusOK)
 	w.Write(make([]byte, 0))
 }
 

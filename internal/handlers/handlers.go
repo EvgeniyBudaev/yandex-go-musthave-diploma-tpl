@@ -205,10 +205,10 @@ func (strg *HandlerWithStorage) Login(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "error unmarshal body", http.StatusBadRequest)
 		return
 	}
-	userData, err := strg.storage.GetUserByLogin(r.Context(), authData)
-	if err != nil {
+	userData, errCode := strg.storage.GetUserByLogin(r.Context(), authData)
+	if errCode != http.StatusOK {
 		log.Println("error get user by login")
-		http.Error(w, "error get user by login", http.StatusUnauthorized)
+		http.Error(w, "error get user by login", errCode)
 		return
 	}
 	h := sha256.New()
@@ -242,16 +242,18 @@ func (strg *HandlerWithStorage) AddOrder(w http.ResponseWriter, r *http.Request)
 		return
 	}
 	userID := r.Context().Value(UserID).(string)
-	err = strg.storage.AddOrderForUser(r.Context(), string(data), userID)
-	if err != nil {
-		log.Printf("error add order into db, %d", http.StatusInternalServerError)
-		http.Error(w, "error add order into db", http.StatusInternalServerError)
+	errCode = strg.storage.AddOrderForUser(r.Context(), string(data), userID)
+	if errCode != http.StatusOK && errCode != http.StatusAccepted {
+		log.Printf("error add order into db, %d", errCode)
+		http.Error(w, "error add order into db", errCode)
 		return
 	}
-	go func(orderNumber string) {
-		strg.ordersToProcess <- orderNumber
-	}(string(data))
-	w.WriteHeader(http.StatusAccepted)
+	if errCode == http.StatusAccepted {
+		go func(orderNumber string) {
+			strg.ordersToProcess <- orderNumber
+		}(string(data))
+	}
+	w.WriteHeader(errCode)
 	w.Write(make([]byte, 0))
 }
 

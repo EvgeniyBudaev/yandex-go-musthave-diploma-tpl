@@ -36,10 +36,10 @@ func (m *MockStorage) EXPECT() *MockStorageMockRecorder {
 }
 
 // AddOrderForUser mocks base method.
-func (m *MockStorage) AddOrderForUser(ctx context.Context, arg0, arg1 string) error {
+func (m *MockStorage) AddOrderForUser(ctx context.Context, arg0, arg1 string) int {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "AddOrderForUser", arg0, arg1)
-	ret0, _ := ret[0].(error)
+	ret0, _ := ret[0].(int)
 	return ret0
 }
 
@@ -109,11 +109,11 @@ func (mr *MockStorageMockRecorder) GetUserBalance(ctx context.Context, arg0 inte
 }
 
 // GetUserByLogin mocks base method.
-func (m *MockStorage) GetUserByLogin(ctx context.Context, arg0 storage.Auth) (storage.Auth, error) {
+func (m *MockStorage) GetUserByLogin(ctx context.Context, arg0 storage.Auth) (storage.Auth, int) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetUserByLogin", arg0)
 	ret0, _ := ret[0].(storage.Auth)
-	ret1, _ := ret[1].(error)
+	ret1, _ := ret[1].(int)
 	return ret0, ret1
 }
 

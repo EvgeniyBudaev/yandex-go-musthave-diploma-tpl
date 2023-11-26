@@ -321,10 +321,10 @@ func (strg *HandlerWithStorage) AddWithdrawal(w http.ResponseWriter, r *http.Req
 		http.Error(w, "bad order number", errCode)
 		return
 	}
-	errCode = strg.storage.AddWithdrawalForUser(r.Context(), userID, withdrawal)
-	if errCode != http.StatusOK {
-		log.Printf("errorCode %v", errCode)
-		http.Error(w, "error from AddWithdrawalForUser", errCode)
+	err = strg.storage.AddWithdrawalForUser(r.Context(), userID, withdrawal)
+	if err != nil {
+		log.Printf("errorCode %v", http.StatusInternalServerError)
+		http.Error(w, "error from AddWithdrawalForUser", http.StatusInternalServerError)
 		return
 	}
 	w.WriteHeader(http.StatusOK)

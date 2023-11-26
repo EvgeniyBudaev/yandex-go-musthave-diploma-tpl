@@ -62,7 +62,7 @@ type Storage interface {
 	GetOrdersByUser(ctx context.Context, userID string) ([]Order, int)
 	AddOrderForUser(ctx context.Context, externalOrderID string, userID string) int
 	GetUserBalance(ctx context.Context, userID string) (UserBalance, error)
-	AddWithdrawalForUser(ctx context.Context, userID string, withdrawal Withdrawal) int
+	AddWithdrawalForUser(ctx context.Context, userID string, withdrawal Withdrawal) error
 	GetWithdrawalsForUser(ctx context.Context, userID string) ([]Withdrawal, error)
 	GetOrdersInProgress(ctx context.Context) ([]Order, error)
 	UpdateOrder(ctx context.Context, order OrderFromBlackBox) error
@@ -208,15 +208,15 @@ func (s *DBStorage) GetUserBalance(ctx context.Context, u string) (UserBalance, 
 	return resultBalance, nil
 }
 
-func (s *DBStorage) AddWithdrawalForUser(ctx context.Context, u string, w Withdrawal) int {
+func (s *DBStorage) AddWithdrawalForUser(ctx context.Context, u string, w Withdrawal) error {
 	userBalance, err := s.GetUserBalance(ctx, u)
 	if err != nil {
 		log.Printf("error while getting status %v", http.StatusInternalServerError)
-		return http.StatusInternalServerError
+		return err
 	}
 	if userBalance.Orders < w.Sum {
 		log.Printf("got less bonus points %v than expected %v", userBalance.Orders, w.Sum)
-		return http.StatusPaymentRequired
+		return err
 	}
 	var withdrawalID string
 	row := s.db.QueryRow(
@@ -226,10 +226,10 @@ func (s *DBStorage) AddWithdrawalForUser(ctx context.Context, u string, w Withdr
 	err = row.Scan(&withdrawalID)
 	if err != nil {
 		log.Printf("error %s", err.Error())
-		return http.StatusInternalServerError
+		return err
 	}
 	log.Printf("new withdrawal %s", withdrawalID)
-	return http.StatusOK
+	return nil
 }
 
 func (s *DBStorage) GetWithdrawalsForUser(ctx context.Context, u string) ([]Withdrawal, error) {

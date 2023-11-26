@@ -50,10 +50,10 @@ func (mr *MockStorageMockRecorder) AddOrderForUser(ctx context.Context, arg0, ar
 }
 
 // AddWithdrawalForUser mocks base method.
-func (m *MockStorage) AddWithdrawalForUser(ctx context.Context, arg0 string, arg1 storage.Withdrawal) int {
+func (m *MockStorage) AddWithdrawalForUser(ctx context.Context, arg0 string, arg1 storage.Withdrawal) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "AddWithdrawalForUser", arg0, arg1)
-	ret0, _ := ret[0].(int)
+	ret0, _ := ret[0].(error)
 	return ret0
 }
 

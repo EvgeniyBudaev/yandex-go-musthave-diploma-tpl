@@ -157,7 +157,6 @@ func (strg *HandlerWithStorage) GetStatusesDaemon() {
 }
 
 func (strg *HandlerWithStorage) Register(w http.ResponseWriter, r *http.Request) {
-	defer r.Body.Close()
 	jsonBody, err := io.ReadAll(r.Body)
 	if err != nil {
 		log.Printf("error while reading body: %s", err.Error())
@@ -189,7 +188,6 @@ func (strg *HandlerWithStorage) Register(w http.ResponseWriter, r *http.Request)
 }
 
 func (strg *HandlerWithStorage) Login(w http.ResponseWriter, r *http.Request) {
-	defer r.Body.Close()
 	jsonData, err := io.ReadAll(r.Body)
 	if err != nil {
 		log.Printf("error while reading body: %s", err.Error())
@@ -227,7 +225,6 @@ func (strg *HandlerWithStorage) Login(w http.ResponseWriter, r *http.Request) {
 }
 
 func (strg *HandlerWithStorage) AddOrder(w http.ResponseWriter, r *http.Request) {
-	defer r.Body.Close()
 	data, err := io.ReadAll(r.Body)
 
 	if err != nil {
@@ -301,7 +298,6 @@ func (strg *HandlerWithStorage) GetBalance(w http.ResponseWriter, r *http.Reques
 
 func (strg *HandlerWithStorage) AddWithdrawal(w http.ResponseWriter, r *http.Request) {
 	userID := r.Context().Value(UserID).(string)
-	defer r.Body.Close()
 	data, err := io.ReadAll(r.Body)
 	if err != nil {
 		log.Printf("error %s", err.Error())

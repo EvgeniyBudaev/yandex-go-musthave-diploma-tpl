@@ -57,7 +57,7 @@ func GetStorage(dbDSN string) Storage {
 }
 
 type Storage interface {
-	Register(ctx context.Context, registerData Auth) (string, int)
+	Register(ctx context.Context, registerData Auth) (string, error)
 	GetUserByLogin(ctx context.Context, authData Auth) (Auth, int)
 	GetOrdersByUser(ctx context.Context, userID string) ([]Order, error)
 	AddOrderForUser(ctx context.Context, externalOrderID string, userID string) int
@@ -72,17 +72,17 @@ type DBStorage struct {
 	db *sql.DB
 }
 
-func (s *DBStorage) Register(ctx context.Context, a Auth) (string, int) {
+func (s *DBStorage) Register(ctx context.Context, a Auth) (string, error) {
 	row := s.db.QueryRow("SELECT id FROM \"user\" WHERE \"login\" = $1", a.Login)
 	var userID sql.NullString
 	err := row.Scan(&userID)
 	if err != nil && userID.Valid {
 		log.Printf("Got error %s", err.Error())
-		return "", http.StatusInternalServerError
+		return "", err
 	}
 	if userID.Valid {
 		log.Printf("user with login %s is existing", a.Login)
-		return "", http.StatusFailedDependency
+		return "", err
 	}
 	h := sha256.New()
 	h.Write([]byte(a.Password))
@@ -90,16 +90,16 @@ func (s *DBStorage) Register(ctx context.Context, a Auth) (string, int) {
 	row = s.db.QueryRow("INSERT INTO \"user\" (\"login\", password_hash) VALUES ($1, $2) RETURNING id", a.Login, passwordHash)
 	if err := row.Scan(&userID); err != nil {
 		log.Printf("error %s", err.Error())
-		return "", http.StatusInternalServerError
+		return "", err
 	} else {
 		log.Printf("userID %v", userID)
 		if userID.Valid {
 			userIDValue := userID.String
 			log.Printf("new userID %s", userIDValue)
-			return userIDValue, http.StatusOK
+			return userIDValue, nil
 		}
 	}
-	return "", http.StatusInternalServerError
+	return "", err
 }
 
 func (s *DBStorage) GetUserByLogin(ctx context.Context, a Auth) (Auth, int) {

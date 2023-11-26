@@ -175,10 +175,10 @@ func (strg *HandlerWithStorage) Register(w http.ResponseWriter, r *http.Request)
 		http.Error(w, "error unmarshal body", http.StatusBadRequest)
 		return
 	}
-	userID, errCode := strg.storage.Register(r.Context(), authData)
-	if errCode != http.StatusOK {
+	userID, err := strg.storage.Register(r.Context(), authData)
+	if err != nil {
 		log.Println("error register user")
-		http.Error(w, "error register user", errCode)
+		http.Error(w, "error register user", http.StatusInternalServerError)
 		return
 	}
 	h := utils.GenerateCookie()

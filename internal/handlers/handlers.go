@@ -17,7 +17,8 @@ import (
 
 type userCtxName string
 
-var UserCookie = "UserCookie"
+const UserCookie = "UserCookie"
+
 var UserID = userCtxName("UserID")
 var CookieKey = []byte("SecretKeyToUserID")
 

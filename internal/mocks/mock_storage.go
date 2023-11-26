@@ -36,10 +36,10 @@ func (m *MockStorage) EXPECT() *MockStorageMockRecorder {
 }
 
 // AddOrderForUser mocks base method.
-func (m *MockStorage) AddOrderForUser(ctx context.Context, arg0, arg1 string) error {
+func (m *MockStorage) AddOrderForUser(ctx context.Context, arg0, arg1 string) int {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "AddOrderForUser", arg0, arg1)
-	ret0, _ := ret[0].(error)
+	ret0, _ := ret[0].(int)
 	return ret0
 }
 
@@ -50,10 +50,10 @@ func (mr *MockStorageMockRecorder) AddOrderForUser(ctx context.Context, arg0, ar
 }
 
 // AddWithdrawalForUser mocks base method.
-func (m *MockStorage) AddWithdrawalForUser(ctx context.Context, arg0 string, arg1 storage.Withdrawal) error {
+func (m *MockStorage) AddWithdrawalForUser(ctx context.Context, arg0 string, arg1 storage.Withdrawal) int {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "AddWithdrawalForUser", arg0, arg1)
-	ret0, _ := ret[0].(error)
+	ret0, _ := ret[0].(int)
 	return ret0
 }
 
@@ -64,11 +64,11 @@ func (mr *MockStorageMockRecorder) AddWithdrawalForUser(ctx context.Context, arg
 }
 
 // GetOrdersByUser mocks base method.
-func (m *MockStorage) GetOrdersByUser(ctx context.Context, arg0 string) ([]storage.Order, error) {
+func (m *MockStorage) GetOrdersByUser(ctx context.Context, arg0 string) ([]storage.Order, int) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetOrdersByUser", arg0)
 	ret0, _ := ret[0].([]storage.Order)
-	ret1, _ := ret[1].(error)
+	ret1, _ := ret[1].(int)
 	return ret0, ret1
 }
 
@@ -79,11 +79,11 @@ func (mr *MockStorageMockRecorder) GetOrdersByUser(ctx context.Context, arg0 int
 }
 
 // GetOrdersInProgress mocks base method.
-func (m *MockStorage) GetOrdersInProgress(ctx context.Context) ([]storage.Order, error) {
+func (m *MockStorage) GetOrdersInProgress(ctx context.Context) ([]storage.Order, int) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetOrdersInProgress")
 	ret0, _ := ret[0].([]storage.Order)
-	ret1, _ := ret[1].(error)
+	ret1, _ := ret[1].(int)
 	return ret0, ret1
 }
 
@@ -94,11 +94,11 @@ func (mr *MockStorageMockRecorder) GetOrdersInProgress(ctx context.Context) *gom
 }
 
 // GetUserBalance mocks base method.
-func (m *MockStorage) GetUserBalance(ctx context.Context, arg0 string) (storage.UserBalance, error) {
+func (m *MockStorage) GetUserBalance(ctx context.Context, arg0 string) (storage.UserBalance, int) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetUserBalance", arg0)
 	ret0, _ := ret[0].(storage.UserBalance)
-	ret1, _ := ret[1].(error)
+	ret1, _ := ret[1].(int)
 	return ret0, ret1
 }
 
@@ -109,11 +109,11 @@ func (mr *MockStorageMockRecorder) GetUserBalance(ctx context.Context, arg0 inte
 }
 
 // GetUserByLogin mocks base method.
-func (m *MockStorage) GetUserByLogin(ctx context.Context, arg0 storage.Auth) (storage.Auth, error) {
+func (m *MockStorage) GetUserByLogin(ctx context.Context, arg0 storage.Auth) (storage.Auth, int) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetUserByLogin", arg0)
 	ret0, _ := ret[0].(storage.Auth)
-	ret1, _ := ret[1].(error)
+	ret1, _ := ret[1].(int)
 	return ret0, ret1
 }
 
@@ -124,11 +124,11 @@ func (mr *MockStorageMockRecorder) GetUserByLogin(ctx context.Context, arg0 inte
 }
 
 // GetWithdrawalsForUser mocks base method.
-func (m *MockStorage) GetWithdrawalsForUser(ctx context.Context, arg0 string) ([]storage.Withdrawal, error) {
+func (m *MockStorage) GetWithdrawalsForUser(ctx context.Context, arg0 string) ([]storage.Withdrawal, int) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetWithdrawalsForUser", arg0)
 	ret0, _ := ret[0].([]storage.Withdrawal)
-	ret1, _ := ret[1].(error)
+	ret1, _ := ret[1].(int)
 	return ret0, ret1
 }
 
@@ -139,11 +139,11 @@ func (mr *MockStorageMockRecorder) GetWithdrawalsForUser(ctx context.Context, ar
 }
 
 // Register mocks base method.
-func (m *MockStorage) Register(ctx context.Context, arg0 storage.Auth) (string, error) {
+func (m *MockStorage) Register(ctx context.Context, arg0 storage.Auth) (string, int) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Register", arg0)
 	ret0, _ := ret[0].(string)
-	ret1, _ := ret[1].(error)
+	ret1, _ := ret[1].(int)
 	return ret0, ret1
 }
 
@@ -154,10 +154,10 @@ func (mr *MockStorageMockRecorder) Register(ctx context.Context, arg0 interface{
 }
 
 // UpdateOrder mocks base method.
-func (m *MockStorage) UpdateOrder(ctx context.Context, arg0 storage.OrderFromBlackBox) error {
+func (m *MockStorage) UpdateOrder(ctx context.Context, arg0 storage.OrderFromBlackBox) int {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "UpdateOrder", arg0)
-	ret0, _ := ret[0].(error)
+	ret0, _ := ret[0].(int)
 	return ret0
 }
 

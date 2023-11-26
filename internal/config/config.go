@@ -6,11 +6,12 @@ import (
 	"os"
 )
 
-var ServerAddr string
-var DBURI string
-var AccrualSysAddr string
-
 func Init() {
+	var (
+		ServerAddr     string
+		DBURI          string
+		AccrualSysAddr string
+	)
 	flag.StringVar(&ServerAddr, "a", "", "GopherMart server address")
 	flag.StringVar(&DBURI, "d", "", "GopherMart database address")
 	flag.StringVar(&AccrualSysAddr, "r", "", "Accrual system address")

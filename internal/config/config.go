@@ -35,8 +35,8 @@ func Init() {
 		config.AccrualSysAddr = AccrualSysAddrEnv
 	}
 
-	log.Printf("Got ServerAddr %s, DBURI %s, AccrualSysAddr %s to run GopherMart", &config.ServerAddr,
-		&config.DBURI, &config.AccrualSysAddr)
+	log.Printf("Got ServerAddr %s, DBURI %s, AccrualSysAddr %s to run GopherMart", config.ServerAddr,
+		config.DBURI, config.AccrualSysAddr)
 }
 
 func GetServerAddr() string {

@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"bytes"
+	"context"
 	"encoding/hex"
 	"encoding/json"
 	"github.com/golang/mock/gomock"
@@ -119,13 +120,14 @@ func TestRegisterHandler(t *testing.T) {
 	}
 	for _, tc := range tt {
 		t.Run(tc.name, func(t *testing.T) {
+			ctx := context.Background()
 			marshalledData, _ := json.Marshal(tc.registerData)
 			request := httptest.NewRequest(http.MethodGet, "/api/user/register", bytes.NewBuffer(marshalledData))
 			w := httptest.NewRecorder()
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
 			storage := mocks.NewMockStorage(ctrl)
-			storage.EXPECT().Register(tc.registerData).Return(tc.mockResponseID, tc.mockResponseErrCode)
+			storage.EXPECT().Register(ctx, tc.registerData).Return(tc.mockResponseID, tc.mockResponseErrCode)
 			handler := http.HandlerFunc(GetHandlerWithStorage(storage).Register)
 			handler.ServeHTTP(w, request)
 			result := w.Result()

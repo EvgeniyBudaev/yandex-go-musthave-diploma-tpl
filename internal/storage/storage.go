@@ -1,6 +1,7 @@
 package storage
 
 import (
+	"context"
 	"crypto/sha256"
 	"database/sql"
 	"encoding/hex"
@@ -56,22 +57,22 @@ func GetStorage(dbDSN string) Storage {
 }
 
 type Storage interface {
-	Register(registerData Auth) (string, int)
-	GetUserByLogin(authData Auth) (Auth, int)
-	GetOrdersByUser(userID string) ([]Order, int)
-	AddOrderForUser(externalOrderID string, userID string) int
-	GetUserBalance(userID string) (UserBalance, int)
-	AddWithdrawalForUser(userID string, withdrawal Withdrawal) int
-	GetWithdrawalsForUser(userID string) ([]Withdrawal, int)
-	GetOrdersInProgress() ([]Order, int)
-	UpdateOrder(order OrderFromBlackBox) int
+	Register(ctx context.Context, registerData Auth) (string, int)
+	GetUserByLogin(ctx context.Context, authData Auth) (Auth, int)
+	GetOrdersByUser(ctx context.Context, userID string) ([]Order, int)
+	AddOrderForUser(ctx context.Context, externalOrderID string, userID string) int
+	GetUserBalance(ctx context.Context, userID string) (UserBalance, int)
+	AddWithdrawalForUser(ctx context.Context, userID string, withdrawal Withdrawal) int
+	GetWithdrawalsForUser(ctx context.Context, userID string) ([]Withdrawal, int)
+	GetOrdersInProgress(ctx context.Context) ([]Order, int)
+	UpdateOrder(ctx context.Context, order OrderFromBlackBox) int
 }
 
 type DBStorage struct {
 	db *sql.DB
 }
 
-func (s *DBStorage) Register(a Auth) (string, int) {
+func (s *DBStorage) Register(ctx context.Context, a Auth) (string, int) {
 	row := s.db.QueryRow("SELECT id FROM \"user\" WHERE \"login\" = $1", a.Login)
 	var userID sql.NullString
 	err := row.Scan(&userID)
@@ -101,7 +102,7 @@ func (s *DBStorage) Register(a Auth) (string, int) {
 	return "", http.StatusInternalServerError
 }
 
-func (s *DBStorage) GetUserByLogin(a Auth) (Auth, int) {
+func (s *DBStorage) GetUserByLogin(ctx context.Context, a Auth) (Auth, int) {
 	row := s.db.QueryRow("SELECT id, login, password_hash FROM \"user\" WHERE login = $1", a.Login)
 	var userData Auth
 	err := row.Scan(&userData.UserID, &userData.Login, &userData.Password)
@@ -112,7 +113,7 @@ func (s *DBStorage) GetUserByLogin(a Auth) (Auth, int) {
 	return userData, http.StatusOK
 }
 
-func (s *DBStorage) AddOrderForUser(id string, u string) int {
+func (s *DBStorage) AddOrderForUser(ctx context.Context, id string, u string) int {
 	row := s.db.QueryRow("SELECT user_id FROM \"order\" WHERE external_id = $1", id)
 	var orderUserID sql.NullString
 	err := row.Scan(&orderUserID)
@@ -144,7 +145,7 @@ func (s *DBStorage) AddOrderForUser(id string, u string) int {
 	return http.StatusAccepted
 }
 
-func (s *DBStorage) GetOrdersByUser(u string) ([]Order, int) {
+func (s *DBStorage) GetOrdersByUser(ctx context.Context, u string) ([]Order, int) {
 	rows, err := s.db.Query("SELECT external_id, status, amount, registered_at FROM \"order\" WHERE user_id = $1", u)
 	if err != nil {
 		log.Printf("error: %s", err.Error())
@@ -172,7 +173,7 @@ func (s *DBStorage) GetOrdersByUser(u string) ([]Order, int) {
 	return orderList, http.StatusOK
 }
 
-func (s *DBStorage) GetUserBalance(u string) (UserBalance, int) {
+func (s *DBStorage) GetUserBalance(ctx context.Context, u string) (UserBalance, int) {
 	log.Printf("userID %s", u)
 	sumOrdersRow := s.db.QueryRow("SELECT sum(amount) FROM \"order\" WHERE user_id = $1", u)
 	sumWithdrawalsRow := s.db.QueryRow("SELECT sum(amount) FROM withdrawal WHERE user_id = $1", u)
@@ -207,8 +208,8 @@ func (s *DBStorage) GetUserBalance(u string) (UserBalance, int) {
 	return resultBalance, http.StatusOK
 }
 
-func (s *DBStorage) AddWithdrawalForUser(u string, w Withdrawal) int {
-	userBalance, errCode := s.GetUserBalance(u)
+func (s *DBStorage) AddWithdrawalForUser(ctx context.Context, u string, w Withdrawal) int {
+	userBalance, errCode := s.GetUserBalance(ctx, u)
 	if errCode != http.StatusOK {
 		log.Printf("error while getting status %v", errCode)
 		return errCode
@@ -231,7 +232,7 @@ func (s *DBStorage) AddWithdrawalForUser(u string, w Withdrawal) int {
 	return http.StatusOK
 }
 
-func (s *DBStorage) GetWithdrawalsForUser(u string) ([]Withdrawal, int) {
+func (s *DBStorage) GetWithdrawalsForUser(ctx context.Context, u string) ([]Withdrawal, int) {
 	rows, err := s.db.Query("SELECT external_id, amount, registered_at FROM withdrawal WHERE user_id = $1", u)
 	if err != nil {
 		log.Printf("error %s", err.Error())
@@ -255,7 +256,7 @@ func (s *DBStorage) GetWithdrawalsForUser(u string) ([]Withdrawal, int) {
 	return withdrawalList, http.StatusOK
 }
 
-func (s *DBStorage) GetOrdersInProgress() ([]Order, int) {
+func (s *DBStorage) GetOrdersInProgress(ctx context.Context) ([]Order, int) {
 	rows, err := s.db.Query("SELECT external_id, status, amount from \"order\" where status not in ('INVALID', 'PROCESSED')")
 
 	if err != nil {
@@ -285,7 +286,7 @@ func (s *DBStorage) GetOrdersInProgress() ([]Order, int) {
 	return orderList, http.StatusOK
 }
 
-func (s *DBStorage) UpdateOrder(o OrderFromBlackBox) int {
+func (s *DBStorage) UpdateOrder(ctx context.Context, o OrderFromBlackBox) int {
 	tx, err := s.db.Begin()
 	if err != nil {
 		log.Printf("error %s", err.Error())

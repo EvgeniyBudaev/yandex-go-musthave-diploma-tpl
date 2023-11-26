@@ -8,6 +8,7 @@ import (
 	"encoding/json"
 	"github.com/tank4gun/go-musthave-diploma-tpl/internal/config"
 	"github.com/tank4gun/go-musthave-diploma-tpl/internal/storage"
+	"github.com/tank4gun/go-musthave-diploma-tpl/internal/utils"
 	"io"
 	"log"
 	"net/http"
@@ -21,7 +22,6 @@ const statusInvalid = "INVALID"
 const statusProcessed = "PROCESSED"
 
 var UserID = userCtxName(config.GetUserID())
-var CookieKey = []byte(config.GetSecretKeyToUserID())
 
 type HandlerWithStorage struct {
 	storage         storage.Storage
@@ -101,7 +101,7 @@ func CheckAuth(next http.Handler) http.Handler {
 			http.Error(w, "error auth user", http.StatusUnauthorized)
 			return
 		}
-		h := hmac.New(sha256.New, CookieKey)
+		h := utils.GenerateCookie()
 		h.Write(data[:36])
 		sign := h.Sum(nil)
 		if hmac.Equal(sign, data[36:]) {
@@ -178,7 +178,7 @@ func (strg *HandlerWithStorage) Register(w http.ResponseWriter, r *http.Request)
 		http.Error(w, "error register user", errCode)
 		return
 	}
-	h := hmac.New(sha256.New, CookieKey)
+	h := utils.GenerateCookie()
 	h.Write([]byte(userID))
 	sign := h.Sum(nil)
 	newCookie := http.Cookie{Name: config.GetUserCookie(), Value: hex.EncodeToString(append([]byte(userID)[:], sign[:]...))}
@@ -213,7 +213,7 @@ func (strg *HandlerWithStorage) Login(w http.ResponseWriter, r *http.Request) {
 	h.Write([]byte(authData.Password))
 	pswdHash := hex.EncodeToString(h.Sum(nil))
 	if pswdHash == userData.Password {
-		h := hmac.New(sha256.New, CookieKey)
+		h := utils.GenerateCookie()
 		h.Write([]byte(userData.UserID))
 		sign := h.Sum(nil)
 		newCookie := http.Cookie{Name: config.GetUserCookie(), Value: hex.EncodeToString(append([]byte(userData.UserID)[:], sign[:]...))}

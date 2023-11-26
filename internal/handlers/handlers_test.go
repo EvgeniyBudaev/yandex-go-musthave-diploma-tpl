@@ -2,8 +2,6 @@ package handlers
 
 import (
 	"bytes"
-	"crypto/hmac"
-	"crypto/sha256"
 	"encoding/hex"
 	"encoding/json"
 	"github.com/golang/mock/gomock"
@@ -11,6 +9,7 @@ import (
 	"github.com/tank4gun/go-musthave-diploma-tpl/internal/config"
 	"github.com/tank4gun/go-musthave-diploma-tpl/internal/mocks"
 	"github.com/tank4gun/go-musthave-diploma-tpl/internal/storage"
+	"github.com/tank4gun/go-musthave-diploma-tpl/internal/utils"
 	"io"
 	"net/http"
 	"net/http/httptest"
@@ -136,7 +135,7 @@ func TestRegisterHandler(t *testing.T) {
 				cookies := result.Cookies()
 				for _, cookie := range cookies {
 					if cookie.Name == config.GetUserCookie() {
-						h := hmac.New(sha256.New, CookieKey)
+						h := utils.GenerateCookie()
 						h.Write([]byte(tc.mockResponseID))
 						sign := h.Sum(nil)
 						assert.Equal(t, hex.EncodeToString(append([]byte(tc.mockResponseID)[:], sign[:]...)), cookie.Value)

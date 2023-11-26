@@ -24,9 +24,9 @@ func Init() {
 	flag.StringVar(&config.AccrualSysAddr, "r", "", "Accrual system address")
 	flag.StringVar(&config.MigrateSourceURL, "m", "file://internal/db/migrations",
 		"Migrate source URL")
-	flag.StringVar(&config.UserCookie, "r", "UserCookie", "User cookie")
-	flag.StringVar(&config.UserID, "r", "UserID", "User ID")
-	flag.StringVar(&config.SecretKeyToUserID, "r", "SecretKeyToUserID", "Secret key to user ID")
+	flag.StringVar(&config.UserCookie, "uc", "UserCookie", "User cookie")
+	flag.StringVar(&config.UserID, "uid", "UserID", "User ID")
+	flag.StringVar(&config.SecretKeyToUserID, "sk", "SecretKeyToUserID", "Secret key to user ID")
 	flag.Parse()
 
 	ServerAddrEnv := os.Getenv("RUN_ADDRESS")

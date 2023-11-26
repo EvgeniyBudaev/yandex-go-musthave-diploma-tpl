@@ -63,7 +63,7 @@ type Storage interface {
 	AddOrderForUser(ctx context.Context, externalOrderID string, userID string) int
 	GetUserBalance(ctx context.Context, userID string) (UserBalance, int)
 	AddWithdrawalForUser(ctx context.Context, userID string, withdrawal Withdrawal) int
-	GetWithdrawalsForUser(ctx context.Context, userID string) ([]Withdrawal, int)
+	GetWithdrawalsForUser(ctx context.Context, userID string) ([]Withdrawal, error)
 	GetOrdersInProgress(ctx context.Context) ([]Order, error)
 	UpdateOrder(ctx context.Context, order OrderFromBlackBox) error
 }
@@ -232,11 +232,11 @@ func (s *DBStorage) AddWithdrawalForUser(ctx context.Context, u string, w Withdr
 	return http.StatusOK
 }
 
-func (s *DBStorage) GetWithdrawalsForUser(ctx context.Context, u string) ([]Withdrawal, int) {
+func (s *DBStorage) GetWithdrawalsForUser(ctx context.Context, u string) ([]Withdrawal, error) {
 	rows, err := s.db.QueryContext(ctx, "SELECT external_id, amount, registered_at FROM withdrawal WHERE user_id = $1", u)
 	if err != nil {
 		log.Printf("error %s", err.Error())
-		return make([]Withdrawal, 0), http.StatusInternalServerError
+		return make([]Withdrawal, 0), err
 	}
 	defer rows.Close()
 	withdrawalList := make([]Withdrawal, 0)
@@ -245,15 +245,15 @@ func (s *DBStorage) GetWithdrawalsForUser(ctx context.Context, u string) ([]With
 		err = rows.Scan(&withdrawal.Order, &withdrawal.Sum, &withdrawal.ProcessedAt)
 		if err != nil {
 			log.Printf("error %s", err.Error())
-			return make([]Withdrawal, 0), http.StatusInternalServerError
+			return make([]Withdrawal, 0), err
 		}
 		withdrawalList = append(withdrawalList, withdrawal)
 	}
 	if err := rows.Err(); err != nil {
 		log.Printf("error: %s", err.Error())
-		return nil, http.StatusInternalServerError
+		return nil, err
 	}
-	return withdrawalList, http.StatusOK
+	return withdrawalList, nil
 }
 
 func (s *DBStorage) GetOrdersInProgress(ctx context.Context) ([]Order, error) {

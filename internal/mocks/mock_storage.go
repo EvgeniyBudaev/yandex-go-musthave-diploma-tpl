@@ -124,11 +124,11 @@ func (mr *MockStorageMockRecorder) GetUserByLogin(ctx context.Context, arg0 inte
 }
 
 // GetWithdrawalsForUser mocks base method.
-func (m *MockStorage) GetWithdrawalsForUser(ctx context.Context, arg0 string) ([]storage.Withdrawal, int) {
+func (m *MockStorage) GetWithdrawalsForUser(ctx context.Context, arg0 string) ([]storage.Withdrawal, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetWithdrawalsForUser", arg0)
 	ret0, _ := ret[0].([]storage.Withdrawal)
-	ret1, _ := ret[1].(int)
+	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 

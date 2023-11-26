@@ -333,10 +333,10 @@ func (strg *HandlerWithStorage) AddWithdrawal(w http.ResponseWriter, r *http.Req
 
 func (strg *HandlerWithStorage) GetWithdrawals(w http.ResponseWriter, r *http.Request) {
 	userID := r.Context().Value(UserID).(string)
-	withdrawals, errCode := strg.storage.GetWithdrawalsForUser(r.Context(), userID)
-	if errCode != http.StatusOK {
-		log.Printf("errCode %v", errCode)
-		http.Error(w, "errCode", errCode)
+	withdrawals, err := strg.storage.GetWithdrawalsForUser(r.Context(), userID)
+	if err != nil {
+		log.Printf("errCode %v", http.StatusInternalServerError)
+		http.Error(w, "err", http.StatusInternalServerError)
 		return
 	}
 	if len(withdrawals) == 0 {

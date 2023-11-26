@@ -260,10 +260,10 @@ func (strg *HandlerWithStorage) AddOrder(w http.ResponseWriter, r *http.Request)
 func (strg *HandlerWithStorage) GetOrders(w http.ResponseWriter, r *http.Request) {
 	log.Println("Got GetOrders request")
 	userID := r.Context().Value(UserID).(string)
-	orders, errCode := strg.storage.GetOrdersByUser(r.Context(), userID)
-	if errCode != http.StatusOK {
-		log.Printf("error %v", errCode)
-		http.Error(w, "bad status code", errCode)
+	orders, err := strg.storage.GetOrdersByUser(r.Context(), userID)
+	if err != nil {
+		log.Printf("error %v", http.StatusInternalServerError)
+		http.Error(w, "bad status code", http.StatusInternalServerError)
 		return
 	}
 	if len(orders) == 0 {

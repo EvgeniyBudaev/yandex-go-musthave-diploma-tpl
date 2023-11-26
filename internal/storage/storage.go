@@ -65,7 +65,7 @@ type Storage interface {
 	AddWithdrawalForUser(ctx context.Context, userID string, withdrawal Withdrawal) int
 	GetWithdrawalsForUser(ctx context.Context, userID string) ([]Withdrawal, int)
 	GetOrdersInProgress(ctx context.Context) ([]Order, int)
-	UpdateOrder(ctx context.Context, order OrderFromBlackBox) int
+	UpdateOrder(ctx context.Context, order OrderFromBlackBox) error
 }
 
 type DBStorage struct {
@@ -286,28 +286,28 @@ func (s *DBStorage) GetOrdersInProgress(ctx context.Context) ([]Order, int) {
 	return orderList, http.StatusOK
 }
 
-func (s *DBStorage) UpdateOrder(ctx context.Context, o OrderFromBlackBox) int {
+func (s *DBStorage) UpdateOrder(ctx context.Context, o OrderFromBlackBox) error {
 	tx, err := s.db.Begin()
 	if err != nil {
 		log.Printf("error %s", err.Error())
-		return http.StatusInternalServerError
+		return err
 	}
 	stmt, err := tx.Prepare("UPDATE \"order\" SET status = $1, amount = $2 where external_id = $3")
 	if err != nil {
 		log.Printf("error %s", err.Error())
-		return http.StatusInternalServerError
+		return err
 	}
 	defer stmt.Close()
 	if _, err := stmt.Exec(o.Status, o.Accrual, o.Order); err != nil {
 		if err = tx.Rollback(); err != nil {
 			log.Fatalf("insert to url, need rollback, %v", err)
-			return http.StatusInternalServerError
+			return err
 		}
-		return http.StatusInternalServerError
+		return err
 	}
 	if err := tx.Commit(); err != nil {
 		log.Fatalf("unable to commit: %v", err)
-		return http.StatusInternalServerError
+		return err
 	}
-	return http.StatusOK
+	return nil
 }

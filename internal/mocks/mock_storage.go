@@ -154,10 +154,10 @@ func (mr *MockStorageMockRecorder) Register(ctx context.Context, arg0 interface{
 }
 
 // UpdateOrder mocks base method.
-func (m *MockStorage) UpdateOrder(ctx context.Context, arg0 storage.OrderFromBlackBox) int {
+func (m *MockStorage) UpdateOrder(ctx context.Context, arg0 storage.OrderFromBlackBox) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "UpdateOrder", arg0)
-	ret0, _ := ret[0].(int)
+	ret0, _ := ret[0].(error)
 	return ret0
 }
 

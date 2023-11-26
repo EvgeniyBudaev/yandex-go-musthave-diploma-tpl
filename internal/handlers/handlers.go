@@ -136,7 +136,10 @@ func (strg *HandlerWithStorage) GetStatusesDaemon() {
 				continue
 			}
 			newOrder.Order = orderNumber
-			strg.storage.UpdateOrder(ctx, newOrder)
+			err = strg.storage.UpdateOrder(ctx, newOrder)
+			if err != nil {
+				return
+			}
 			if newOrder.Status != statusInvalid && newOrder.Status != statusProcessed {
 				go func(orderNumber string) {
 					strg.ordersToProcess <- orderNumber

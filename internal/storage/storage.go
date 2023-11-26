@@ -73,7 +73,7 @@ type DBStorage struct {
 }
 
 func (s *DBStorage) Register(ctx context.Context, a Auth) (string, error) {
-	row := s.db.QueryRow("SELECT id FROM \"user\" WHERE \"login\" = $1", a.Login)
+	row := s.db.QueryRowContext(ctx, "SELECT id FROM \"user\" WHERE \"login\" = $1", a.Login)
 	var userID sql.NullString
 	err := row.Scan(&userID)
 	if err != nil && userID.Valid {
@@ -87,7 +87,7 @@ func (s *DBStorage) Register(ctx context.Context, a Auth) (string, error) {
 	h := sha256.New()
 	h.Write([]byte(a.Password))
 	passwordHash := hex.EncodeToString(h.Sum(nil))
-	row = s.db.QueryRow("INSERT INTO \"user\" (\"login\", password_hash) VALUES ($1, $2) RETURNING id", a.Login, passwordHash)
+	row = s.db.QueryRowContext(ctx, "INSERT INTO \"user\" (\"login\", password_hash) VALUES ($1, $2) RETURNING id", a.Login, passwordHash)
 	if err := row.Scan(&userID); err != nil {
 		log.Printf("error %s", err.Error())
 		return "", err
@@ -114,7 +114,7 @@ func (s *DBStorage) GetUserByLogin(ctx context.Context, a Auth) (Auth, error) {
 }
 
 func (s *DBStorage) AddOrderForUser(ctx context.Context, id string, u string) (int, error) {
-	row := s.db.QueryRow("SELECT user_id FROM \"order\" WHERE external_id = $1", id)
+	row := s.db.QueryRowContext(ctx, "SELECT user_id FROM \"order\" WHERE external_id = $1", id)
 	var orderUserID sql.NullString
 	err := row.Scan(&orderUserID)
 	if err != nil && orderUserID.Valid {
@@ -131,7 +131,8 @@ func (s *DBStorage) AddOrderForUser(ctx context.Context, id string, u string) (i
 		}
 	}
 	log.Printf("order with id %v not found in database", id)
-	row = s.db.QueryRow(
+	row = s.db.QueryRowContext(
+		ctx,
 		"INSERT INTO \"order\" (user_id, status, external_id) VALUES ($1, $2, $3) RETURNING id",
 		u, "NEW", id,
 	)
@@ -219,7 +220,7 @@ func (s *DBStorage) AddWithdrawalForUser(ctx context.Context, u string, w Withdr
 		return err
 	}
 	var withdrawalID string
-	row := s.db.QueryRow(
+	row := s.db.QueryRowContext(ctx,
 		"INSERT INTO withdrawal (user_id, amount, external_id) VALUES ($1, $2, $3) RETURNING id",
 		u, w.Sum, w.Order,
 	)
@@ -287,7 +288,7 @@ func (s *DBStorage) GetOrdersInProgress(ctx context.Context) ([]Order, error) {
 }
 
 func (s *DBStorage) UpdateOrder(ctx context.Context, o OrderFromBlackBox) error {
-	tx, err := s.db.Begin()
+	tx, err := s.db.BeginTx(ctx, nil)
 	if err != nil {
 		log.Printf("error %s", err.Error())
 		return err

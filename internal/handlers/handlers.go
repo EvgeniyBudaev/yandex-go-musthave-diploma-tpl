@@ -205,10 +205,10 @@ func (strg *HandlerWithStorage) Login(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "error unmarshal body", http.StatusBadRequest)
 		return
 	}
-	userData, errCode := strg.storage.GetUserByLogin(r.Context(), authData)
-	if errCode != http.StatusOK {
+	userData, err := strg.storage.GetUserByLogin(r.Context(), authData)
+	if err != nil {
 		log.Println("error get user by login")
-		http.Error(w, "error get user by login", errCode)
+		http.Error(w, "error get user by login", http.StatusUnauthorized)
 		return
 	}
 	h := sha256.New()

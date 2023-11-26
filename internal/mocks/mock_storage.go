@@ -109,11 +109,11 @@ func (mr *MockStorageMockRecorder) GetUserBalance(ctx context.Context, arg0 inte
 }
 
 // GetUserByLogin mocks base method.
-func (m *MockStorage) GetUserByLogin(ctx context.Context, arg0 storage.Auth) (storage.Auth, int) {
+func (m *MockStorage) GetUserByLogin(ctx context.Context, arg0 storage.Auth) (storage.Auth, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetUserByLogin", arg0)
 	ret0, _ := ret[0].(storage.Auth)
-	ret1, _ := ret[1].(int)
+	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 

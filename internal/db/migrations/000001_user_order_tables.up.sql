@@ -8,7 +8,7 @@ CREATE TABLE IF NOT EXISTS "order" (
     id uuid default gen_random_uuid() PRIMARY KEY,
     user_id uuid NOT NULL,
     status varchar(20),
-    amount real,
+    amount DECIMAL(10, 2),
     external_id varchar(100) NOT NULL,
     registered_at timestamp default now() NOT NULL,
     CONSTRAINT fk_user FOREIGN KEY(user_id) REFERENCES "user"(id)
@@ -16,7 +16,7 @@ CREATE TABLE IF NOT EXISTS "order" (
 CREATE TABLE IF NOT EXISTS withdrawal (
     id uuid default gen_random_uuid()  PRIMARY KEY,
     user_id uuid NOT NULL,
-    amount real NOT NULL,
+    amount DECIMAL(10, 2) NOT NULL,
     external_id varchar(100) NOT NULL,
     registered_at timestamp default now() NOT NULL ,
     CONSTRAINT fk_user FOREIGN KEY(user_id) REFERENCES "user"(id)

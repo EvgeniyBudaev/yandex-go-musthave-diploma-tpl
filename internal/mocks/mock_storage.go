@@ -94,11 +94,11 @@ func (mr *MockStorageMockRecorder) GetOrdersInProgress(ctx context.Context) *gom
 }
 
 // GetUserBalance mocks base method.
-func (m *MockStorage) GetUserBalance(ctx context.Context, arg0 string) (storage.UserBalance, int) {
+func (m *MockStorage) GetUserBalance(ctx context.Context, arg0 string) (storage.UserBalance, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetUserBalance", arg0)
 	ret0, _ := ret[0].(storage.UserBalance)
-	ret1, _ := ret[1].(int)
+	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 

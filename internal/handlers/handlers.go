@@ -284,15 +284,15 @@ func (strg *HandlerWithStorage) GetOrders(w http.ResponseWriter, r *http.Request
 }
 
 func (strg *HandlerWithStorage) GetBalance(w http.ResponseWriter, r *http.Request) {
-	userBalance, errCode := strg.storage.GetUserBalance(r.Context(), r.Context().Value(UserID).(string))
-	if errCode != http.StatusOK {
-		http.Error(w, "error get user balance", errCode)
+	userBalance, err := strg.storage.GetUserBalance(r.Context(), r.Context().Value(UserID).(string))
+	if err != nil {
+		http.Error(w, "error get user balance", http.StatusInternalServerError)
 		return
 	}
 	userBalanceMarshalled, err := json.Marshal(userBalance)
 	if err != nil {
 		log.Printf("error while marshalling: %s", err.Error())
-		http.Error(w, "error while marshalling", errCode)
+		http.Error(w, "error while marshalling", http.StatusInternalServerError)
 		return
 	}
 	w.Header().Set("Content-Type", "application/json")

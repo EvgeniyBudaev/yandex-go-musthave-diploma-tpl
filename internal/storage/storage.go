@@ -59,7 +59,7 @@ func GetStorage(dbDSN string) Storage {
 type Storage interface {
 	Register(ctx context.Context, registerData Auth) (string, int)
 	GetUserByLogin(ctx context.Context, authData Auth) (Auth, int)
-	GetOrdersByUser(ctx context.Context, userID string) ([]Order, int)
+	GetOrdersByUser(ctx context.Context, userID string) ([]Order, error)
 	AddOrderForUser(ctx context.Context, externalOrderID string, userID string) int
 	GetUserBalance(ctx context.Context, userID string) (UserBalance, error)
 	AddWithdrawalForUser(ctx context.Context, userID string, withdrawal Withdrawal) error
@@ -145,11 +145,11 @@ func (s *DBStorage) AddOrderForUser(ctx context.Context, id string, u string) in
 	return http.StatusAccepted
 }
 
-func (s *DBStorage) GetOrdersByUser(ctx context.Context, u string) ([]Order, int) {
+func (s *DBStorage) GetOrdersByUser(ctx context.Context, u string) ([]Order, error) {
 	rows, err := s.db.QueryContext(ctx, "SELECT external_id, status, amount, registered_at FROM \"order\" WHERE user_id = $1", u)
 	if err != nil {
 		log.Printf("error: %s", err.Error())
-		return nil, http.StatusInternalServerError
+		return nil, err
 	}
 	defer rows.Close()
 	orderList := make([]Order, 0)
@@ -158,7 +158,7 @@ func (s *DBStorage) GetOrdersByUser(ctx context.Context, u string) ([]Order, int
 		err := rows.Scan(&orderFromDBVal.Number, &orderFromDBVal.Status, &orderFromDBVal.Accrual, &orderFromDBVal.UploadedAt)
 		if err != nil {
 			log.Printf("error: %s", err.Error())
-			return nil, http.StatusInternalServerError
+			return nil, err
 		}
 		order := Order{Number: orderFromDBVal.Number, Status: orderFromDBVal.Status, UploadedAt: orderFromDBVal.UploadedAt}
 		if orderFromDBVal.Accrual.Valid {
@@ -168,9 +168,9 @@ func (s *DBStorage) GetOrdersByUser(ctx context.Context, u string) ([]Order, int
 	}
 	if err := rows.Err(); err != nil {
 		log.Printf("error: %s", err.Error())
-		return nil, http.StatusInternalServerError
+		return nil, err
 	}
-	return orderList, http.StatusOK
+	return orderList, nil
 }
 
 func (s *DBStorage) GetUserBalance(ctx context.Context, u string) (UserBalance, error) {

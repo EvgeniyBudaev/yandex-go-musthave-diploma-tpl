@@ -64,11 +64,11 @@ func (mr *MockStorageMockRecorder) AddWithdrawalForUser(ctx context.Context, arg
 }
 
 // GetOrdersByUser mocks base method.
-func (m *MockStorage) GetOrdersByUser(ctx context.Context, arg0 string) ([]storage.Order, int) {
+func (m *MockStorage) GetOrdersByUser(ctx context.Context, arg0 string) ([]storage.Order, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetOrdersByUser", arg0)
 	ret0, _ := ret[0].([]storage.Order)
-	ret1, _ := ret[1].(int)
+	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 

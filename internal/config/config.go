@@ -2,8 +2,9 @@ package config
 
 import (
 	"flag"
+	"github.com/joho/godotenv"
+	"github.com/kelseyhightower/envconfig"
 	"log"
-	"os"
 )
 
 type Config struct {
@@ -29,33 +30,12 @@ func Init() {
 	flag.StringVar(&config.SecretKeyToUserID, "sk", "SecretKeyToUserID", "Secret key to user ID")
 	flag.Parse()
 
-	ServerAddrEnv := os.Getenv("RUN_ADDRESS")
-	if ServerAddrEnv != "" {
-		config.ServerAddr = ServerAddrEnv
+	if err := godotenv.Load(); err != nil {
+		return
 	}
-	DBURIEnv := os.Getenv("DATABASE_URI")
-	if DBURIEnv != "" {
-		config.DBURI = DBURIEnv
-	}
-	AccrualSysAddrEnv := os.Getenv("ACCRUAL_SYSTEM_ADDRESS")
-	if AccrualSysAddrEnv != "" {
-		config.AccrualSysAddr = AccrualSysAddrEnv
-	}
-	MigrateSourceURLEnv := os.Getenv("MIGRATE_SOURCE_URL")
-	if MigrateSourceURLEnv != "" {
-		config.MigrateSourceURL = MigrateSourceURLEnv
-	}
-	UserCookieEnv := os.Getenv("USER_COOKIE")
-	if UserCookieEnv != "" {
-		config.UserCookie = UserCookieEnv
-	}
-	UserIDEnv := os.Getenv("USERID")
-	if UserIDEnv != "" {
-		config.UserID = UserIDEnv
-	}
-	SecretKeyToUserIDEnv := os.Getenv("SECRET_KEY_TO_USER_ID")
-	if SecretKeyToUserIDEnv != "" {
-		config.SecretKeyToUserID = SecretKeyToUserIDEnv
+	err := envconfig.Process("", &config)
+	if err != nil {
+		return
 	}
 
 	log.Printf("Got ServerAddr %s, DBURI %s, AccrualSysAddr %s to run GopherMart", config.ServerAddr,

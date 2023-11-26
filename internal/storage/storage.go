@@ -73,9 +73,15 @@ type DBStorage struct {
 }
 
 func (s *DBStorage) Register(ctx context.Context, a Auth) (string, int) {
+	tx, err := s.db.BeginTx(ctx, nil)
+	if err != nil {
+		log.Printf("Got error %s", err.Error())
+		return "", http.StatusInternalServerError
+	}
+	defer tx.Rollback()
 	row := s.db.QueryRow("SELECT id FROM \"user\" WHERE \"login\" = $1", a.Login)
 	var userID sql.NullString
-	err := row.Scan(&userID)
+	err = row.Scan(&userID)
 	if err != nil && userID.Valid {
 		log.Printf("Got error %s", err.Error())
 		return "", http.StatusInternalServerError
@@ -96,6 +102,7 @@ func (s *DBStorage) Register(ctx context.Context, a Auth) (string, int) {
 		if userID.Valid {
 			userIDValue := userID.String
 			log.Printf("new userID %s", userIDValue)
+			tx.Commit()
 			return userIDValue, http.StatusOK
 		}
 	}

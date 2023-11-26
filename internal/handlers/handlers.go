@@ -172,10 +172,9 @@ func (strg *HandlerWithStorage) Register(w http.ResponseWriter, r *http.Request)
 		http.Error(w, "error unmarshal body", http.StatusBadRequest)
 		return
 	}
-	userID, errCode := strg.storage.Register(r.Context(), authData)
-	if errCode != http.StatusOK {
+	userID, err := strg.storage.Register(r.Context(), authData)
+	if err != nil {
 		log.Println("error register user")
-		http.Error(w, "error register user", errCode)
 		return
 	}
 	h := utils.GenerateCookie()
@@ -202,10 +201,9 @@ func (strg *HandlerWithStorage) Login(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "error unmarshal body", http.StatusBadRequest)
 		return
 	}
-	userData, errCode := strg.storage.GetUserByLogin(r.Context(), authData)
-	if errCode != http.StatusOK {
+	userData, err := strg.storage.GetUserByLogin(r.Context(), authData)
+	if err != nil {
 		log.Println("error get user by login")
-		http.Error(w, "error get user by login", errCode)
 		return
 	}
 	h := sha256.New()
@@ -239,10 +237,9 @@ func (strg *HandlerWithStorage) AddOrder(w http.ResponseWriter, r *http.Request)
 		return
 	}
 	userID := r.Context().Value(UserID).(string)
-	errCode = strg.storage.AddOrderForUser(r.Context(), string(data), userID)
-	if errCode != http.StatusOK && errCode != http.StatusAccepted {
+	err = strg.storage.AddOrderForUser(r.Context(), string(data), userID)
+	if err != nil {
 		log.Printf("error add order into db, %d", errCode)
-		http.Error(w, "error add order into db", errCode)
 		return
 	}
 	if errCode == http.StatusAccepted {
@@ -257,10 +254,9 @@ func (strg *HandlerWithStorage) AddOrder(w http.ResponseWriter, r *http.Request)
 func (strg *HandlerWithStorage) GetOrders(w http.ResponseWriter, r *http.Request) {
 	log.Println("Got GetOrders request")
 	userID := r.Context().Value(UserID).(string)
-	orders, errCode := strg.storage.GetOrdersByUser(r.Context(), userID)
-	if errCode != http.StatusOK {
-		log.Printf("error %v", errCode)
-		http.Error(w, "bad status code", errCode)
+	orders, err := strg.storage.GetOrdersByUser(r.Context(), userID)
+	if err != nil {
+		log.Printf("error %v", err)
 		return
 	}
 	if len(orders) == 0 {
@@ -281,15 +277,13 @@ func (strg *HandlerWithStorage) GetOrders(w http.ResponseWriter, r *http.Request
 }
 
 func (strg *HandlerWithStorage) GetBalance(w http.ResponseWriter, r *http.Request) {
-	userBalance, errCode := strg.storage.GetUserBalance(r.Context(), r.Context().Value(UserID).(string))
-	if errCode != http.StatusOK {
-		http.Error(w, "error get user balance", errCode)
+	userBalance, err := strg.storage.GetUserBalance(r.Context(), r.Context().Value(UserID).(string))
+	if err != nil {
 		return
 	}
 	userBalanceMarshalled, err := json.Marshal(userBalance)
 	if err != nil {
 		log.Printf("error while marshalling: %s", err.Error())
-		http.Error(w, "error while marshalling", errCode)
 		return
 	}
 	w.Header().Set("Content-Type", "application/json")
@@ -318,10 +312,9 @@ func (strg *HandlerWithStorage) AddWithdrawal(w http.ResponseWriter, r *http.Req
 		http.Error(w, "bad order number", errCode)
 		return
 	}
-	errCode = strg.storage.AddWithdrawalForUser(r.Context(), userID, withdrawal)
-	if errCode != http.StatusOK {
-		log.Printf("errorCode %v", errCode)
-		http.Error(w, "error from AddWithdrawalForUser", errCode)
+	err = strg.storage.AddWithdrawalForUser(r.Context(), userID, withdrawal)
+	if err != nil {
+		log.Printf("error %v", errCode)
 		return
 	}
 	w.WriteHeader(http.StatusOK)
@@ -330,10 +323,9 @@ func (strg *HandlerWithStorage) AddWithdrawal(w http.ResponseWriter, r *http.Req
 
 func (strg *HandlerWithStorage) GetWithdrawals(w http.ResponseWriter, r *http.Request) {
 	userID := r.Context().Value(UserID).(string)
-	withdrawals, errCode := strg.storage.GetWithdrawalsForUser(r.Context(), userID)
-	if errCode != http.StatusOK {
-		log.Printf("errCode %v", errCode)
-		http.Error(w, "errCode", errCode)
+	withdrawals, err := strg.storage.GetWithdrawalsForUser(r.Context(), userID)
+	if err != nil {
+		log.Printf("error %v", err)
 		return
 	}
 	if len(withdrawals) == 0 {

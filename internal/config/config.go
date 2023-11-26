@@ -16,11 +16,6 @@ type Config struct {
 var config Config
 
 func Init() {
-	flag.StringVar(&config.ServerAddr, "a", "", "GopherMart server address")
-	flag.StringVar(&config.DBURI, "d", "", "GopherMart database address")
-	flag.StringVar(&config.AccrualSysAddr, "r", "", "Accrual system address")
-	flag.Parse()
-
 	if err := godotenv.Load(); err != nil {
 		log.Fatal("error while Init. Error in Load")
 		return
@@ -30,6 +25,11 @@ func Init() {
 		log.Fatal("error while Init. Error in Process")
 		return
 	}
+
+	flag.StringVar(&config.ServerAddr, "a", "", "GopherMart server address")
+	flag.StringVar(&config.DBURI, "d", "", "GopherMart database address")
+	flag.StringVar(&config.AccrualSysAddr, "r", "", "Accrual system address")
+	flag.Parse()
 
 	log.Printf("Got ServerAddr %s, DBURI %s, AccrualSysAddr %s to run GopherMart",
 		&config.ServerAddr, &config.DBURI, &config.AccrualSysAddr)

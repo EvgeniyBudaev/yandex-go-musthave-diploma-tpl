@@ -242,10 +242,10 @@ func (strg *HandlerWithStorage) AddOrder(w http.ResponseWriter, r *http.Request)
 		return
 	}
 	userID := r.Context().Value(UserID).(string)
-	err = strg.storage.AddOrderForUser(r.Context(), string(data), userID)
-	if err != nil {
-		log.Printf("error add order into db, %d", http.StatusInternalServerError)
-		http.Error(w, "error add order into db", http.StatusInternalServerError)
+	errCode = strg.storage.AddOrderForUser(r.Context(), string(data), userID)
+	if errCode != http.StatusOK && errCode != http.StatusAccepted {
+		log.Printf("error add order into db, %d", errCode)
+		http.Error(w, "error add order into db", errCode)
 		return
 	}
 	if errCode == http.StatusAccepted {
@@ -262,7 +262,7 @@ func (strg *HandlerWithStorage) GetOrders(w http.ResponseWriter, r *http.Request
 	userID := r.Context().Value(UserID).(string)
 	orders, err := strg.storage.GetOrdersByUser(r.Context(), userID)
 	if err != nil {
-		log.Printf("error %v", http.StatusInternalServerError)
+		log.Printf("error %v", err)
 		http.Error(w, "bad status code", http.StatusInternalServerError)
 		return
 	}

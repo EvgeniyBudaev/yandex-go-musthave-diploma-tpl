@@ -242,18 +242,18 @@ func (strg *HandlerWithStorage) AddOrder(w http.ResponseWriter, r *http.Request)
 		return
 	}
 	userID := r.Context().Value(UserID).(string)
-	errCode = strg.storage.AddOrderForUser(r.Context(), string(data), userID)
-	if errCode != http.StatusOK && errCode != http.StatusAccepted {
-		log.Printf("error add order into db, %d", errCode)
-		http.Error(w, "error add order into db", errCode)
+	statusCode, err := strg.storage.AddOrderForUser(r.Context(), string(data), userID)
+	if err != nil {
+		log.Printf("error add order into db, %d", statusCode)
+		http.Error(w, "error add order into db", statusCode)
 		return
 	}
-	if errCode == http.StatusAccepted {
+	if statusCode == http.StatusAccepted {
 		go func(orderNumber string) {
 			strg.ordersToProcess <- orderNumber
 		}(string(data))
 	}
-	w.WriteHeader(errCode)
+	w.WriteHeader(statusCode)
 	w.Write(make([]byte, 0))
 }
 

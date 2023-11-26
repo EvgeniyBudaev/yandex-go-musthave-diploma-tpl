@@ -8,6 +8,7 @@ import (
 	"encoding/json"
 	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/assert"
+	"github.com/tank4gun/go-musthave-diploma-tpl/internal/config"
 	"github.com/tank4gun/go-musthave-diploma-tpl/internal/mocks"
 	"github.com/tank4gun/go-musthave-diploma-tpl/internal/storage"
 	"io"
@@ -134,7 +135,7 @@ func TestRegisterHandler(t *testing.T) {
 			if result.StatusCode == http.StatusOK {
 				cookies := result.Cookies()
 				for _, cookie := range cookies {
-					if cookie.Name == UserCookie {
+					if cookie.Name == config.GetUserCookie() {
 						h := hmac.New(sha256.New, CookieKey)
 						h.Write([]byte(tc.mockResponseID))
 						sign := h.Sum(nil)

@@ -58,7 +58,7 @@ func GetStorage(dbDSN string) Storage {
 
 type Storage interface {
 	Register(ctx context.Context, registerData Auth) (string, int)
-	GetUserByLogin(ctx context.Context, authData Auth) (Auth, int)
+	GetUserByLogin(ctx context.Context, authData Auth) (Auth, error)
 	GetOrdersByUser(ctx context.Context, userID string) ([]Order, error)
 	AddOrderForUser(ctx context.Context, externalOrderID string, userID string) error
 	GetUserBalance(ctx context.Context, userID string) (UserBalance, error)
@@ -102,15 +102,15 @@ func (s *DBStorage) Register(ctx context.Context, a Auth) (string, int) {
 	return "", http.StatusInternalServerError
 }
 
-func (s *DBStorage) GetUserByLogin(ctx context.Context, a Auth) (Auth, int) {
+func (s *DBStorage) GetUserByLogin(ctx context.Context, a Auth) (Auth, error) {
 	row := s.db.QueryRowContext(ctx, "SELECT id, login, password_hash FROM \"user\" WHERE login = $1", a.Login)
 	var userData Auth
 	err := row.Scan(&userData.UserID, &userData.Login, &userData.Password)
 	if err != nil {
 		log.Printf("could not get user data for login %s", a.Login)
-		return userData, http.StatusUnauthorized
+		return userData, err
 	}
-	return userData, http.StatusOK
+	return userData, nil
 }
 
 func (s *DBStorage) AddOrderForUser(ctx context.Context, id string, u string) error {

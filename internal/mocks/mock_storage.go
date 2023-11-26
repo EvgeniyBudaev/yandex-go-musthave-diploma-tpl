@@ -79,11 +79,11 @@ func (mr *MockStorageMockRecorder) GetOrdersByUser(ctx context.Context, arg0 int
 }
 
 // GetOrdersInProgress mocks base method.
-func (m *MockStorage) GetOrdersInProgress(ctx context.Context) ([]storage.Order, int) {
+func (m *MockStorage) GetOrdersInProgress(ctx context.Context) ([]storage.Order, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetOrdersInProgress")
 	ret0, _ := ret[0].([]storage.Order)
-	ret1, _ := ret[1].(int)
+	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 

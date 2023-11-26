@@ -64,7 +64,7 @@ type Storage interface {
 	GetUserBalance(ctx context.Context, userID string) (UserBalance, int)
 	AddWithdrawalForUser(ctx context.Context, userID string, withdrawal Withdrawal) int
 	GetWithdrawalsForUser(ctx context.Context, userID string) ([]Withdrawal, int)
-	GetOrdersInProgress(ctx context.Context) ([]Order, int)
+	GetOrdersInProgress(ctx context.Context) ([]Order, error)
 	UpdateOrder(ctx context.Context, order OrderFromBlackBox) error
 }
 
@@ -256,12 +256,12 @@ func (s *DBStorage) GetWithdrawalsForUser(ctx context.Context, u string) ([]With
 	return withdrawalList, http.StatusOK
 }
 
-func (s *DBStorage) GetOrdersInProgress(ctx context.Context) ([]Order, int) {
+func (s *DBStorage) GetOrdersInProgress(ctx context.Context) ([]Order, error) {
 	rows, err := s.db.QueryContext(ctx, "SELECT external_id, status, amount from \"order\" where status not in ('INVALID', 'PROCESSED')")
 
 	if err != nil {
 		log.Printf("error %s", err.Error())
-		return make([]Order, 0), http.StatusInternalServerError
+		return make([]Order, 0), err
 	}
 	defer rows.Close()
 	orderList := make([]Order, 0)
@@ -270,7 +270,7 @@ func (s *DBStorage) GetOrdersInProgress(ctx context.Context) ([]Order, int) {
 		err = rows.Scan(&orderFromDBVal.Number, &orderFromDBVal.Status, &orderFromDBVal.Accrual)
 		if err != nil {
 			log.Printf("error %s", err.Error())
-			return make([]Order, 0), http.StatusInternalServerError
+			return make([]Order, 0), err
 		}
 		order := Order{Number: orderFromDBVal.Number, Status: orderFromDBVal.Status}
 		if orderFromDBVal.Accrual.Valid {
@@ -280,10 +280,10 @@ func (s *DBStorage) GetOrdersInProgress(ctx context.Context) ([]Order, int) {
 	}
 	if err := rows.Err(); err != nil {
 		log.Printf("error: %s", err.Error())
-		return nil, http.StatusInternalServerError
+		return nil, err
 	}
 	log.Printf("orders %v", orderList)
-	return orderList, http.StatusOK
+	return orderList, nil
 }
 
 func (s *DBStorage) UpdateOrder(ctx context.Context, o OrderFromBlackBox) error {

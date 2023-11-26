@@ -17,6 +17,9 @@ import (
 
 type userCtxName string
 
+const statusInvalid = "INVALID"
+const statusProcessed = "PROCESSED"
+
 var UserID = userCtxName(config.GetUserID())
 var CookieKey = []byte(config.GetSecretKeyToUserID())
 
@@ -133,7 +136,7 @@ func (strg *HandlerWithStorage) GetStatusesDaemon() {
 			}
 			newOrder.Order = orderNumber
 			strg.storage.UpdateOrder(newOrder)
-			if newOrder.Status != "INVALID" && newOrder.Status != "PROCESSED" {
+			if newOrder.Status != statusInvalid && newOrder.Status != statusProcessed {
 				go func(orderNumber string) {
 					strg.ordersToProcess <- orderNumber
 				}(orderNumber)

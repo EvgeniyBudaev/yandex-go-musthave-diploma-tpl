@@ -7,10 +7,10 @@ import (
 	"net/http"
 )
 
-func CreateServer(s storage.Storage) *http.Server {
-	router := routes.InitRouter(s)
+func CreateServer(s storage.Storage, c *config.Config) *http.Server {
+	router := routes.InitRouter(s, c)
 	server := &http.Server{
-		Addr:    config.GetServerAddr(),
+		Addr:    c.GetServerAddr(),
 		Handler: router,
 	}
 	return server

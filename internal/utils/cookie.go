@@ -7,7 +7,7 @@ import (
 	"hash"
 )
 
-func GenerateCookie() hash.Hash {
-	var CookieKey = []byte(config.GetSecretKeyToUserID())
+func GenerateCookie(c *config.Config) hash.Hash {
+	var CookieKey = []byte(c.GetSecretKeyToUserID())
 	return hmac.New(sha256.New, CookieKey)
 }

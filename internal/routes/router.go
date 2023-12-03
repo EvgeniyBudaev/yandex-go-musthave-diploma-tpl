@@ -1,14 +1,15 @@
 package routes
 
 import (
+	"github.com/EvgeniyBudaev/yandex-go-musthave-diploma-tpl/internal/config"
 	"github.com/EvgeniyBudaev/yandex-go-musthave-diploma-tpl/internal/handlers"
 	"github.com/EvgeniyBudaev/yandex-go-musthave-diploma-tpl/internal/storage"
 	"github.com/go-chi/chi/v5"
 )
 
-func InitRouter(s storage.Storage) *chi.Mux {
+func InitRouter(s storage.Storage, c *config.Config) *chi.Mux {
 	router := chi.NewRouter()
-	handlerWithStorage := handlers.GetHandlerWithStorage(s)
+	handlerWithStorage := handlers.GetHandlerWithStorage(s, c)
 	router.Use(handlers.CheckAuth)
 	go handlerWithStorage.GetStatusesDaemon()
 	router.Post("/api/user/register", handlerWithStorage.Register)

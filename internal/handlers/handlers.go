@@ -21,16 +21,15 @@ type userCtxName string
 const statusInvalid = "INVALID"
 const statusProcessed = "PROCESSED"
 
-var UserID = userCtxName(config.GetUserID())
-
 type HandlerWithStorage struct {
 	storage         storage.Storage
 	client          http.Client
 	ordersToProcess chan string
+	config          *config.Config
 }
 
-func GetHandlerWithStorage(storage storage.Storage) *HandlerWithStorage {
-	return &HandlerWithStorage{storage: storage, client: http.Client{}, ordersToProcess: make(chan string, 10)}
+func GetHandlerWithStorage(storage storage.Storage, c *config.Config) *HandlerWithStorage {
+	return &HandlerWithStorage{storage: storage, client: http.Client{}, ordersToProcess: make(chan string, 10), config: c}
 }
 
 func ValidateOrder(order string) (uint, int) {
@@ -78,12 +77,13 @@ func ValidateOrder(order string) (uint, int) {
 
 func CheckAuth(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		cfg := r.Context().Value("config").(*config.Config)
 		if r.URL.Path == "/api/user/register" || r.URL.Path == "/api/user/login" {
 			log.Printf("get %s url, skip check", r.URL.Path)
 			next.ServeHTTP(w, r)
 			return
 		}
-		cookie, err := (*r).Cookie(config.GetUserCookie())
+		cookie, err := (*r).Cookie(cfg.GetUserCookie())
 		if cookie != nil && err != nil {
 			log.Println(err.Error())
 			http.Error(w, "could not auth user", http.StatusUnauthorized)
@@ -101,9 +101,10 @@ func CheckAuth(next http.Handler) http.Handler {
 			http.Error(w, "error auth user", http.StatusUnauthorized)
 			return
 		}
-		h := utils.GenerateCookie()
+		h := utils.GenerateCookie(cfg)
 		h.Write(data[:36])
 		sign := h.Sum(nil)
+		UserID := userCtxName(cfg.GetUserID())
 		if hmac.Equal(sign, data[36:]) {
 			ctx := context.WithValue(r.Context(), UserID, string(data[:36]))
 			next.ServeHTTP(w, r.WithContext(ctx))
@@ -118,7 +119,7 @@ func (strg *HandlerWithStorage) GetStatusesDaemon() {
 	ctx := context.Background()
 	for orderNumber := range strg.ordersToProcess {
 		log.Printf("order %s to process", orderNumber)
-		response, err := strg.client.Get(config.GetAccrualSysAddr() + "/api/orders/" + orderNumber)
+		response, err := strg.client.Get(strg.config.GetAccrualSysAddr() + "/api/orders/" + orderNumber)
 		if err != nil {
 			log.Printf("error %s", err.Error())
 			continue
@@ -181,10 +182,10 @@ func (strg *HandlerWithStorage) Register(w http.ResponseWriter, r *http.Request)
 		http.Error(w, "error register user", http.StatusInternalServerError)
 		return
 	}
-	h := utils.GenerateCookie()
+	h := utils.GenerateCookie(strg.config)
 	h.Write([]byte(userID))
 	sign := h.Sum(nil)
-	newCookie := http.Cookie{Name: config.GetUserCookie(), Value: hex.EncodeToString(append([]byte(userID)[:], sign[:]...))}
+	newCookie := http.Cookie{Name: strg.config.GetUserCookie(), Value: hex.EncodeToString(append([]byte(userID)[:], sign[:]...))}
 	log.Printf("sign %v, cookie %v", sign, []byte(userID))
 	http.SetCookie(w, &newCookie)
 	w.WriteHeader(http.StatusOK)
@@ -215,10 +216,10 @@ func (strg *HandlerWithStorage) Login(w http.ResponseWriter, r *http.Request) {
 	h.Write([]byte(authData.Password))
 	pswdHash := hex.EncodeToString(h.Sum(nil))
 	if pswdHash == userData.Password {
-		h := utils.GenerateCookie()
+		h := utils.GenerateCookie(strg.config)
 		h.Write([]byte(userData.UserID))
 		sign := h.Sum(nil)
-		newCookie := http.Cookie{Name: config.GetUserCookie(), Value: hex.EncodeToString(append([]byte(userData.UserID)[:], sign[:]...))}
+		newCookie := http.Cookie{Name: strg.config.GetUserCookie(), Value: hex.EncodeToString(append([]byte(userData.UserID)[:], sign[:]...))}
 		http.SetCookie(w, &newCookie)
 		w.WriteHeader(http.StatusOK)
 		w.Write(make([]byte, 0))
@@ -241,6 +242,7 @@ func (strg *HandlerWithStorage) AddOrder(w http.ResponseWriter, r *http.Request)
 		http.Error(w, "bad order number", errCode)
 		return
 	}
+	UserID := userCtxName(strg.config.GetUserID())
 	userID := r.Context().Value(UserID).(string)
 	statusCode, err := strg.storage.AddOrderForUser(r.Context(), string(data), userID)
 	if err != nil {
@@ -259,6 +261,7 @@ func (strg *HandlerWithStorage) AddOrder(w http.ResponseWriter, r *http.Request)
 
 func (strg *HandlerWithStorage) GetOrders(w http.ResponseWriter, r *http.Request) {
 	log.Println("Got GetOrders request")
+	UserID := userCtxName(strg.config.GetUserID())
 	userID := r.Context().Value(UserID).(string)
 	orders, err := strg.storage.GetOrdersByUser(r.Context(), userID)
 	if err != nil {
@@ -284,6 +287,7 @@ func (strg *HandlerWithStorage) GetOrders(w http.ResponseWriter, r *http.Request
 }
 
 func (strg *HandlerWithStorage) GetBalance(w http.ResponseWriter, r *http.Request) {
+	UserID := userCtxName(strg.config.GetUserID())
 	userBalance, err := strg.storage.GetUserBalance(r.Context(), r.Context().Value(UserID).(string))
 	if err != nil {
 		http.Error(w, "error get user balance", http.StatusInternalServerError)
@@ -301,6 +305,7 @@ func (strg *HandlerWithStorage) GetBalance(w http.ResponseWriter, r *http.Reques
 }
 
 func (strg *HandlerWithStorage) AddWithdrawal(w http.ResponseWriter, r *http.Request) {
+	UserID := userCtxName(strg.config.GetUserID())
 	userID := r.Context().Value(UserID).(string)
 	data, err := io.ReadAll(r.Body)
 	if err != nil {
@@ -332,6 +337,7 @@ func (strg *HandlerWithStorage) AddWithdrawal(w http.ResponseWriter, r *http.Req
 }
 
 func (strg *HandlerWithStorage) GetWithdrawals(w http.ResponseWriter, r *http.Request) {
+	UserID := userCtxName(strg.config.GetUserID())
 	userID := r.Context().Value(UserID).(string)
 	withdrawals, err := strg.storage.GetWithdrawalsForUser(r.Context(), userID)
 	if err != nil {

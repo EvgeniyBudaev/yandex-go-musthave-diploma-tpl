@@ -16,18 +16,35 @@ type Config struct {
 	SecretKeyToUserID string `env:"SECRET_KEY_TO_USER_ID"`
 }
 
-var config Config
-
-func Init() {
-	flag.StringVar(&config.ServerAddr, "a", "", "GopherMart server address")
-	flag.StringVar(&config.DBURI, "d", "", "GopherMart database address")
-	flag.StringVar(&config.AccrualSysAddr, "r", "", "Accrual system address")
-	flag.StringVar(&config.MigrateSourceURL, "m", "file://internal/db/migrations",
+func Init() *Config {
+	var (
+		serverAddr        string
+		dBURI             string
+		accrualSysAddr    string
+		migrateSourceURL  string
+		userCookie        string
+		userID            string
+		secretKeyToUserID string
+	)
+	flag.StringVar(&serverAddr, "a", "", "GopherMart server address")
+	flag.StringVar(&dBURI, "d", "", "GopherMart database address")
+	flag.StringVar(&accrualSysAddr, "r", "", "Accrual system address")
+	flag.StringVar(&migrateSourceURL, "m", "file://internal/db/migrations",
 		"Migrate source URL")
-	flag.StringVar(&config.UserCookie, "uc", "UserCookie", "User cookie")
-	flag.StringVar(&config.UserID, "uid", "UserID", "User ID")
-	flag.StringVar(&config.SecretKeyToUserID, "sk", "SecretKeyToUserID", "Secret key to user ID")
+	flag.StringVar(&userCookie, "uc", "UserCookie", "User cookie")
+	flag.StringVar(&userID, "uid", "UserID", "User ID")
+	flag.StringVar(&secretKeyToUserID, "sk", "SecretKeyToUserID", "Secret key to user ID")
 	flag.Parse()
+
+	config := &Config{
+		ServerAddr:        serverAddr,
+		DBURI:             dBURI,
+		AccrualSysAddr:    accrualSysAddr,
+		MigrateSourceURL:  migrateSourceURL,
+		UserCookie:        userCookie,
+		UserID:            userID,
+		SecretKeyToUserID: secretKeyToUserID,
+	}
 
 	ServerAddrEnv := os.Getenv("RUN_ADDRESS")
 	if ServerAddrEnv != "" {
@@ -60,32 +77,33 @@ func Init() {
 
 	log.Printf("Got ServerAddr %s, DBURI %s, AccrualSysAddr %s to run GopherMart", config.ServerAddr,
 		config.DBURI, config.AccrualSysAddr)
+	return config
 }
 
-func GetServerAddr() string {
-	return config.ServerAddr
+func (c *Config) GetServerAddr() string {
+	return c.ServerAddr
 }
 
-func GetDBURI() string {
-	return config.DBURI
+func (c *Config) GetDBURI() string {
+	return c.DBURI
 }
 
-func GetAccrualSysAddr() string {
-	return config.AccrualSysAddr
+func (c *Config) GetAccrualSysAddr() string {
+	return c.AccrualSysAddr
 }
 
-func GetMigrateSourceURL() string {
-	return config.MigrateSourceURL
+func (c *Config) GetMigrateSourceURL() string {
+	return c.MigrateSourceURL
 }
 
-func GetUserCookie() string {
-	return config.UserCookie
+func (c *Config) GetUserCookie() string {
+	return c.UserCookie
 }
 
-func GetUserID() string {
-	return config.UserID
+func (c *Config) GetUserID() string {
+	return c.UserID
 }
 
-func GetSecretKeyToUserID() string {
-	return config.SecretKeyToUserID
+func (c *Config) GetSecretKeyToUserID() string {
+	return c.SecretKeyToUserID
 }

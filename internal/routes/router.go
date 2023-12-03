@@ -1,9 +1,9 @@
 package routes
 
 import (
+	"github.com/EvgeniyBudaev/yandex-go-musthave-diploma-tpl/internal/handlers"
+	"github.com/EvgeniyBudaev/yandex-go-musthave-diploma-tpl/internal/storage"
 	"github.com/go-chi/chi/v5"
-	"github.com/tank4gun/go-musthave-diploma-tpl/internal/handlers"
-	"github.com/tank4gun/go-musthave-diploma-tpl/internal/storage"
 )
 
 func InitRouter(s storage.Storage) *chi.Mux {

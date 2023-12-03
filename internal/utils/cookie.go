@@ -3,7 +3,7 @@ package utils
 import (
 	"crypto/hmac"
 	"crypto/sha256"
-	"github.com/tank4gun/go-musthave-diploma-tpl/internal/config"
+	"github.com/EvgeniyBudaev/yandex-go-musthave-diploma-tpl/internal/config"
 	"hash"
 )
 

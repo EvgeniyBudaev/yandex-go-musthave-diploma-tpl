@@ -2,11 +2,11 @@ package db
 
 import (
 	"fmt"
+	"github.com/EvgeniyBudaev/yandex-go-musthave-diploma-tpl/internal/config"
 	"github.com/golang-migrate/migrate/v4"
 	_ "github.com/golang-migrate/migrate/v4/database/postgres"
 	_ "github.com/golang-migrate/migrate/v4/source/file"
 	_ "github.com/jackc/pgx/v5/stdlib"
-	"github.com/tank4gun/go-musthave-diploma-tpl/internal/config"
 	"log"
 )
 

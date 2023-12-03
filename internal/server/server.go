@@ -1,9 +1,9 @@
 package server
 
 import (
-	"github.com/tank4gun/go-musthave-diploma-tpl/internal/config"
-	"github.com/tank4gun/go-musthave-diploma-tpl/internal/routes"
-	"github.com/tank4gun/go-musthave-diploma-tpl/internal/storage"
+	"github.com/EvgeniyBudaev/yandex-go-musthave-diploma-tpl/internal/config"
+	"github.com/EvgeniyBudaev/yandex-go-musthave-diploma-tpl/internal/routes"
+	"github.com/EvgeniyBudaev/yandex-go-musthave-diploma-tpl/internal/storage"
 	"net/http"
 )
 

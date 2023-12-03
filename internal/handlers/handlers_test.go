@@ -120,6 +120,7 @@ func TestRegisterHandler(t *testing.T) {
 	}
 	for _, tc := range tt {
 		t.Run(tc.name, func(t *testing.T) {
+			cfg := config.Init()
 			ctx := context.Background()
 			marshalledData, _ := json.Marshal(tc.registerData)
 			request := httptest.NewRequest(http.MethodGet, "/api/user/register", bytes.NewBuffer(marshalledData))
@@ -128,7 +129,7 @@ func TestRegisterHandler(t *testing.T) {
 			defer ctrl.Finish()
 			storage := mocks.NewMockStorage(ctrl)
 			storage.EXPECT().Register(ctx, tc.registerData).Return(tc.mockResponseID, tc.mockResponseErrCode)
-			handler := http.HandlerFunc(GetHandlerWithStorage(storage).Register)
+			handler := http.HandlerFunc(GetHandlerWithStorage(storage, cfg).Register)
 			handler.ServeHTTP(w, request)
 			result := w.Result()
 			defer result.Body.Close()
@@ -136,8 +137,8 @@ func TestRegisterHandler(t *testing.T) {
 			if result.StatusCode == http.StatusOK {
 				cookies := result.Cookies()
 				for _, cookie := range cookies {
-					if cookie.Name == config.GetUserCookie() {
-						h := utils.GenerateCookie()
+					if cookie.Name == cfg.GetUserCookie() {
+						h := utils.GenerateCookie(cfg)
 						h.Write([]byte(tc.mockResponseID))
 						sign := h.Sum(nil)
 						assert.Equal(t, hex.EncodeToString(append([]byte(tc.mockResponseID)[:], sign[:]...)), cookie.Value)

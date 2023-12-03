@@ -8,6 +8,6 @@ import (
 )
 
 func GenerateCookie() hash.Hash {
-	var CookieKey = []byte(config.Init().GetSecretKeyToUserID())
+	var CookieKey = []byte(config.GetSecretKeyToUserID())
 	return hmac.New(sha256.New, CookieKey)
 }

@@ -136,7 +136,7 @@ func TestRegisterHandler(t *testing.T) {
 			if result.StatusCode == http.StatusOK {
 				cookies := result.Cookies()
 				for _, cookie := range cookies {
-					if cookie.Name == config.Init().GetUserCookie() {
+					if cookie.Name == config.GetUserCookie() {
 						h := utils.GenerateCookie()
 						h.Write([]byte(tc.mockResponseID))
 						sign := h.Sum(nil)

@@ -1,4 +1,4 @@
-module github.com/tank4gun/go-musthave-diploma-tpl
+module github.com/EvgeniyBudaev/yandex-go-musthave-diploma-tpl
 
 go 1.19
 

@@ -10,7 +10,7 @@ import (
 func CreateServer(s storage.Storage) *http.Server {
 	router := routes.InitRouter(s)
 	server := &http.Server{
-		Addr:    config.GetServerAddr(),
+		Addr:    config.Init().GetServerAddr(),
 		Handler: router,
 	}
 	return server

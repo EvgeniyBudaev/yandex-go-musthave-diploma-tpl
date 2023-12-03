@@ -14,7 +14,7 @@ func RunMigrations(dbURI string) error {
 	if dbURI == "" {
 		return fmt.Errorf("got empty dbURI")
 	}
-	m, err := migrate.New(config.GetMigrateSourceURL(), dbURI)
+	m, err := migrate.New(config.Init().GetMigrateSourceURL(), dbURI)
 	if err != nil {
 		log.Printf("Got err %s", err.Error())
 		return err

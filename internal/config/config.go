@@ -16,9 +16,8 @@ type Config struct {
 	SecretKeyToUserID string `env:"SECRET_KEY_TO_USER_ID"`
 }
 
-var config Config
-
-func Init() {
+func Init() Config {
+	var config Config
 	flag.StringVar(&config.ServerAddr, "a", "", "GopherMart server address")
 	flag.StringVar(&config.DBURI, "d", "", "GopherMart database address")
 	flag.StringVar(&config.AccrualSysAddr, "r", "", "Accrual system address")
@@ -60,32 +59,33 @@ func Init() {
 
 	log.Printf("Got ServerAddr %s, DBURI %s, AccrualSysAddr %s to run GopherMart", config.ServerAddr,
 		config.DBURI, config.AccrualSysAddr)
+	return config
 }
 
-func GetServerAddr() string {
-	return config.ServerAddr
+func (c Config) GetServerAddr() string {
+	return c.ServerAddr
 }
 
-func GetDBURI() string {
-	return config.DBURI
+func (c Config) GetDBURI() string {
+	return c.DBURI
 }
 
-func GetAccrualSysAddr() string {
-	return config.AccrualSysAddr
+func (c Config) GetAccrualSysAddr() string {
+	return c.AccrualSysAddr
 }
 
-func GetMigrateSourceURL() string {
-	return config.MigrateSourceURL
+func (c Config) GetMigrateSourceURL() string {
+	return c.MigrateSourceURL
 }
 
-func GetUserCookie() string {
-	return config.UserCookie
+func (c Config) GetUserCookie() string {
+	return c.UserCookie
 }
 
-func GetUserID() string {
-	return config.UserID
+func (c Config) GetUserID() string {
+	return c.UserID
 }
 
-func GetSecretKeyToUserID() string {
-	return config.SecretKeyToUserID
+func (c Config) GetSecretKeyToUserID() string {
+	return c.SecretKeyToUserID
 }

@@ -21,7 +21,7 @@ type userCtxName string
 const statusInvalid = "INVALID"
 const statusProcessed = "PROCESSED"
 
-var UserID = userCtxName(config.GetUserID())
+var UserID = userCtxName(config.Init().GetUserID())
 
 type HandlerWithStorage struct {
 	storage         storage.Storage
@@ -83,7 +83,7 @@ func CheckAuth(next http.Handler) http.Handler {
 			next.ServeHTTP(w, r)
 			return
 		}
-		cookie, err := (*r).Cookie(config.GetUserCookie())
+		cookie, err := (*r).Cookie(config.Init().GetUserCookie())
 		if cookie != nil && err != nil {
 			log.Println(err.Error())
 			http.Error(w, "could not auth user", http.StatusUnauthorized)
@@ -118,7 +118,7 @@ func (strg *HandlerWithStorage) GetStatusesDaemon() {
 	ctx := context.Background()
 	for orderNumber := range strg.ordersToProcess {
 		log.Printf("order %s to process", orderNumber)
-		response, err := strg.client.Get(config.GetAccrualSysAddr() + "/api/orders/" + orderNumber)
+		response, err := strg.client.Get(config.Init().GetAccrualSysAddr() + "/api/orders/" + orderNumber)
 		if err != nil {
 			log.Printf("error %s", err.Error())
 			continue
@@ -184,7 +184,7 @@ func (strg *HandlerWithStorage) Register(w http.ResponseWriter, r *http.Request)
 	h := utils.GenerateCookie()
 	h.Write([]byte(userID))
 	sign := h.Sum(nil)
-	newCookie := http.Cookie{Name: config.GetUserCookie(), Value: hex.EncodeToString(append([]byte(userID)[:], sign[:]...))}
+	newCookie := http.Cookie{Name: config.Init().GetUserCookie(), Value: hex.EncodeToString(append([]byte(userID)[:], sign[:]...))}
 	log.Printf("sign %v, cookie %v", sign, []byte(userID))
 	http.SetCookie(w, &newCookie)
 	w.WriteHeader(http.StatusOK)
@@ -218,7 +218,7 @@ func (strg *HandlerWithStorage) Login(w http.ResponseWriter, r *http.Request) {
 		h := utils.GenerateCookie()
 		h.Write([]byte(userData.UserID))
 		sign := h.Sum(nil)
-		newCookie := http.Cookie{Name: config.GetUserCookie(), Value: hex.EncodeToString(append([]byte(userData.UserID)[:], sign[:]...))}
+		newCookie := http.Cookie{Name: config.Init().GetUserCookie(), Value: hex.EncodeToString(append([]byte(userData.UserID)[:], sign[:]...))}
 		http.SetCookie(w, &newCookie)
 		w.WriteHeader(http.StatusOK)
 		w.Write(make([]byte, 0))

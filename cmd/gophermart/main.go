@@ -9,8 +9,8 @@ import (
 
 func main() {
 	config.Init()
-	db.RunMigrations(config.GetDBURI())
-	storageForHandler := storage.GetStorage(config.GetDBURI())
+	db.RunMigrations(config.Init().GetDBURI())
+	storageForHandler := storage.GetStorage(config.Init().GetDBURI())
 	serverToRun := server.CreateServer(storageForHandler)
 	serverToRun.ListenAndServe()
 }

@@ -124,7 +124,7 @@ func (s *DBStorage) AddOrderForUser(ctx context.Context, id string, u string) (i
 	//		return http.StatusConflict, err
 	//	}
 	//}
-	log.Printf("order with id %v not found in database", id)
+	//log.Printf("order with id %v not found in database", id)
 	row = s.db.QueryRowContext(
 		ctx,
 		"INSERT INTO \"order\" (user_id, status, external_id) VALUES ($1, $2, $3) RETURNING id",

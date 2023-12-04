@@ -85,7 +85,7 @@ func (c *Config) GetAccrualSysAddr() string {
 	return config.AccrualSysAddr
 }
 
-func GetMigrateSourceURL() string {
+func (c *Config) GetMigrateSourceURL() string {
 	return config.MigrateSourceURL
 }
 

@@ -10,11 +10,11 @@ import (
 	"log"
 )
 
-func RunMigrations(dbURI string) error {
-	if dbURI == "" {
+func RunMigrations(c *config.Config) error {
+	if c.GetDBURI() == "" {
 		return fmt.Errorf("got empty dbURI")
 	}
-	m, err := migrate.New(config.GetMigrateSourceURL(), dbURI)
+	m, err := migrate.New(c.GetMigrateSourceURL(), c.GetDBURI())
 	if err != nil {
 		log.Printf("Got err %s", err.Error())
 		return err

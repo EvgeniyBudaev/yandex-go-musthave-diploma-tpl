@@ -12,7 +12,6 @@ import (
 	"io"
 	"log"
 	"net/http"
-	"strconv"
 	"time"
 )
 
@@ -35,49 +34,6 @@ type HandlerWithStorage struct {
 
 func GetHandlerWithStorage(storage storage.Storage) *HandlerWithStorage {
 	return &HandlerWithStorage{storage: storage, client: http.Client{}, ordersToProcess: make(chan string, 10)}
-}
-
-func ValidateOrder(order string) (uint, int, error) {
-	orderNum, err := strconv.Atoi(order)
-	if err != nil {
-		log.Printf("error while casting order to int %s", err.Error())
-		return 0, http.StatusBadRequest, err
-	}
-	if orderNum < 0 {
-		log.Println("Get orderNum < 0")
-		return 0, http.StatusBadRequest, err
-	}
-	sum := 0
-	if len(order)%2 == 0 {
-		for i, num := range []rune(order) {
-			if i%2 == 0 {
-				if int(num-'0')*2 > 9 {
-					sum += int(num-'0')*2 - 9
-				} else {
-					sum += int(num-'0') * 2
-				}
-			} else {
-				sum += int(num - '0')
-			}
-		}
-	} else {
-		for i, num := range []rune(order) {
-			if i%2 == 1 {
-				if int(num-'0')*2 > 9 {
-					sum += int(num-'0')*2 - 9
-				} else {
-					sum += int(num-'0') * 2
-				}
-			} else {
-				sum += int(num - '0')
-			}
-		}
-	}
-	if sum%10 == 0 {
-		return uint(orderNum), http.StatusOK, nil
-	} else {
-		return 0, http.StatusUnprocessableEntity, err
-	}
 }
 
 func CheckAuth(next http.Handler) http.Handler {
@@ -238,13 +194,6 @@ func (strg *HandlerWithStorage) AddOrder(w http.ResponseWriter, r *http.Request)
 	if err != nil {
 		log.Printf("error while reading body: ")
 	}
-
-	_, errCode, _ := ValidateOrder(string(data))
-	if errCode != http.StatusOK {
-		log.Printf("bad order number %s", data)
-		http.Error(w, "bad order number", errCode)
-		return
-	}
 	userID := r.Context().Value(UserID).(string)
 	statusCode, err := strg.storage.AddOrderForUser(r.Context(), string(data), userID)
 	if err != nil {
@@ -317,12 +266,6 @@ func (strg *HandlerWithStorage) AddWithdrawal(w http.ResponseWriter, r *http.Req
 	if err != nil {
 		log.Printf("error %s", err.Error())
 		http.Error(w, "error while getting data", http.StatusInternalServerError)
-		return
-	}
-	_, errCode, _ := ValidateOrder(withdrawal.Order)
-	if errCode != http.StatusOK {
-		log.Printf("bad order number %s", withdrawal.Order)
-		http.Error(w, "bad order number", errCode)
 		return
 	}
 	err = strg.storage.AddWithdrawalForUser(r.Context(), userID, withdrawal)

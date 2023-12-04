@@ -121,7 +121,7 @@ func (s *DBStorage) AddOrderForUser(ctx context.Context, id string, u string) (i
 			return http.StatusOK, true, nil
 		} else {
 			log.Printf("another userID %s (instead of %s) for orderID %s", orderUserID.String, u, id)
-			return http.StatusConflict, false, err
+			return http.StatusConflict, true, err
 		}
 	}
 	log.Printf("order with id %v not found in database", id)

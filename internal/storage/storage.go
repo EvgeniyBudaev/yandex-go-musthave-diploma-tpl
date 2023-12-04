@@ -111,7 +111,7 @@ func (s *DBStorage) AddOrderForUser(ctx context.Context, id string, u string) (i
 	row := s.db.QueryRowContext(ctx, "SELECT user_id FROM \"order\" WHERE external_id = $1", id)
 	var orderUserID sql.NullString
 	err := row.Scan(&orderUserID)
-	if err != nil && orderUserID.Valid {
+	if err != nil {
 		log.Printf("error while querying %s", err.Error())
 		return http.StatusInternalServerError, 0, err
 	}

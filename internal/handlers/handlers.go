@@ -275,7 +275,7 @@ func (strg *HandlerWithStorage) AddOrder(w http.ResponseWriter, r *http.Request)
 	//	}(string(data))
 	//}
 
-	w.WriteHeader(statusCode)
+	w.WriteHeader(http.StatusOK)
 	w.Write(make([]byte, 0))
 }
 

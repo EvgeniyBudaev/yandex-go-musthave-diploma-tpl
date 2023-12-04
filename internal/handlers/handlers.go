@@ -252,15 +252,15 @@ func (strg *HandlerWithStorage) AddOrder(w http.ResponseWriter, r *http.Request)
 		log.Printf("error add order into db, %d", statusCode)
 		http.Error(w, "error add order into db", statusCode)
 	}
-	if founded && err == nil {
-		statusCode = http.StatusOK
-		log.Printf("error add order into db, %d", statusCode)
-	}
 	if founded && err != nil {
 		statusCode = http.StatusConflict
 		log.Printf("error add order into db, %d", statusCode)
 		http.Error(w, "error add order into db", statusCode)
 	}
+	//if founded && err == nil {
+	//	statusCode = http.StatusOK
+	//	log.Printf("error add order into db, %d", statusCode)
+	//}
 
 	//if err != nil {
 	//	log.Printf("error add order into db, %d", statusCode)

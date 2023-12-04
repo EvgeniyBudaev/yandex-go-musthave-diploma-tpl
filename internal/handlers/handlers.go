@@ -6,9 +6,9 @@ import (
 	"crypto/sha256"
 	"encoding/hex"
 	"encoding/json"
+	"github.com/EvgeniyBudaev/yandex-go-musthave-diploma-tpl/internal/auth"
 	"github.com/EvgeniyBudaev/yandex-go-musthave-diploma-tpl/internal/config"
 	"github.com/EvgeniyBudaev/yandex-go-musthave-diploma-tpl/internal/storage"
-	"github.com/EvgeniyBudaev/yandex-go-musthave-diploma-tpl/internal/utils"
 	"io"
 	"log"
 	"net/http"
@@ -100,7 +100,7 @@ func CheckAuth(next http.Handler) http.Handler {
 			http.Error(w, "error auth user", http.StatusUnauthorized)
 			return
 		}
-		h := utils.GenerateCookie()
+		h := auth.GenerateCookie()
 		h.Write(data[:36])
 		sign := h.Sum(nil)
 		if hmac.Equal(sign, data[36:]) {
@@ -183,7 +183,7 @@ func (strg *HandlerWithStorage) Register(w http.ResponseWriter, r *http.Request)
 		http.Error(w, "error register user", http.StatusInternalServerError)
 		return
 	}
-	h = utils.GenerateCookie()
+	h = auth.GenerateCookie()
 	h.Write([]byte(userID))
 	sign := h.Sum(nil)
 	newCookie := http.Cookie{Name: config.GetUserCookie(), Value: hex.EncodeToString(append([]byte(userID)[:], sign[:]...))}
@@ -217,7 +217,7 @@ func (strg *HandlerWithStorage) Login(w http.ResponseWriter, r *http.Request) {
 	h.Write([]byte(authData.Password))
 	pswdHash := hex.EncodeToString(h.Sum(nil))
 	if pswdHash == userData.Password {
-		h := utils.GenerateCookie()
+		h := auth.GenerateCookie()
 		h.Write([]byte(userData.UserID))
 		sign := h.Sum(nil)
 		newCookie := http.Cookie{Name: config.GetUserCookie(), Value: hex.EncodeToString(append([]byte(userData.UserID)[:], sign[:]...))}

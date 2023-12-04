@@ -5,10 +5,10 @@ import (
 	"context"
 	"encoding/hex"
 	"encoding/json"
+	"github.com/EvgeniyBudaev/yandex-go-musthave-diploma-tpl/internal/auth"
 	"github.com/EvgeniyBudaev/yandex-go-musthave-diploma-tpl/internal/config"
 	"github.com/EvgeniyBudaev/yandex-go-musthave-diploma-tpl/internal/mocks"
 	"github.com/EvgeniyBudaev/yandex-go-musthave-diploma-tpl/internal/storage"
-	"github.com/EvgeniyBudaev/yandex-go-musthave-diploma-tpl/internal/utils"
 	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/assert"
 	"io"
@@ -137,7 +137,7 @@ func TestRegisterHandler(t *testing.T) {
 				cookies := result.Cookies()
 				for _, cookie := range cookies {
 					if cookie.Name == config.GetUserCookie() {
-						h := utils.GenerateCookie()
+						h := auth.GenerateCookie()
 						h.Write([]byte(tc.mockResponseID))
 						sign := h.Sum(nil)
 						assert.Equal(t, hex.EncodeToString(append([]byte(tc.mockResponseID)[:], sign[:]...)), cookie.Value)

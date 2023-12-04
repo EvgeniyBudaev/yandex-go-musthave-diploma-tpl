@@ -31,10 +31,11 @@ type HandlerWithStorage struct {
 	storage         storage.Storage
 	client          http.Client
 	ordersToProcess chan string
+	config          *config.Config
 }
 
-func GetHandlerWithStorage(storage storage.Storage) *HandlerWithStorage {
-	return &HandlerWithStorage{storage: storage, client: http.Client{}, ordersToProcess: make(chan string, 10)}
+func NewHandlerWithStorage(storage storage.Storage, c *config.Config) *HandlerWithStorage {
+	return &HandlerWithStorage{storage: storage, client: http.Client{}, ordersToProcess: make(chan string, 10), config: c}
 }
 
 func ValidateOrder(order string) (uint, int, error) {
@@ -75,7 +76,7 @@ func ValidateOrder(order string) (uint, int, error) {
 	}
 }
 
-func CheckAuth(next http.Handler) http.Handler {
+func (strg *HandlerWithStorage) CheckAuth(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if r.URL.Path == "/api/user/register" || r.URL.Path == "/api/user/login" {
 			log.Printf("get %s url, skip check", r.URL.Path)

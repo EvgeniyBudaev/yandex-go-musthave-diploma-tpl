@@ -9,8 +9,8 @@ import (
 
 func InitRouter(s storage.Storage, c *config.Config) *chi.Mux {
 	router := chi.NewRouter()
-	handlerWithStorage := handlers.GetHandlerWithStorage(s)
-	router.Use(handlers.CheckAuth)
+	handlerWithStorage := handlers.NewHandlerWithStorage(s, c)
+	router.Use(handlerWithStorage.CheckAuth)
 	go handlerWithStorage.GetStatusesDaemon(c)
 	router.Post("/api/user/register", handlerWithStorage.Register)
 	router.Post("/api/user/login", handlerWithStorage.Login)

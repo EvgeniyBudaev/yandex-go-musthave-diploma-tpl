@@ -23,6 +23,59 @@ type wantResponse struct {
 	responseContent string
 }
 
+func TestValidateOrder(t *testing.T) {
+	tests := []struct {
+		name        string
+		order       string
+		resultOrder uint
+		errCode     int
+	}{
+		{
+			name:        "not integer order",
+			order:       "SomeText",
+			resultOrder: 0,
+			errCode:     http.StatusBadRequest,
+		},
+		{
+			name:        "negative order",
+			order:       "-5",
+			resultOrder: 0,
+			errCode:     http.StatusBadRequest,
+		},
+		{
+			name:        "correct order with odd digit quantity",
+			order:       "101",
+			resultOrder: 101,
+			errCode:     http.StatusOK,
+		},
+		{
+			name:        "incorrect order with odd digit quantity",
+			order:       "124",
+			resultOrder: 0,
+			errCode:     http.StatusUnprocessableEntity,
+		},
+		{
+			name:        "correct order with even digit quantity",
+			order:       "4953",
+			resultOrder: 4953,
+			errCode:     http.StatusOK,
+		},
+		{
+			name:        "incorrect order with even digit quantity",
+			order:       "3743",
+			resultOrder: 0,
+			errCode:     http.StatusUnprocessableEntity,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			result, errCode, _ := ValidateOrder(tt.order)
+			assert.Equal(t, tt.resultOrder, result)
+			assert.Equal(t, tt.errCode, errCode)
+		})
+	}
+}
+
 func TestRegisterHandler(t *testing.T) {
 	tt := []struct {
 		name                string

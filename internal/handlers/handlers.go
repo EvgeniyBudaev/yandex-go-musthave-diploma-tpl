@@ -147,8 +147,13 @@ func (strg *HandlerWithStorage) GetStatusesDaemon() {
 			response.Body.Close()
 		} else {
 			if response.StatusCode == http.StatusTooManyRequests {
+				retryAfter, err := strconv.Atoi(response.Header.Get("Retry-After"))
+				if err != nil {
+					log.Printf("get 429 StatusTooManyRequests, need to sleep a bit: %d seconds", retryAfter)
+					return
+				}
 				log.Printf("get 429 StatusTooManyRequests, need to sleep a bit")
-				time.Sleep(1 * time.Second)
+				time.Sleep(time.Duration(retryAfter) * time.Second)
 			}
 			log.Printf("bad status code %v for order %s", response.StatusCode, orderNumber)
 			go func(orderNumber string) {

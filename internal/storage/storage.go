@@ -58,7 +58,7 @@ type Storage interface {
 	Register(ctx context.Context, registerData Auth, passwordHash string) (string, error)
 	GetUserByLogin(ctx context.Context, authData Auth) (Auth, error)
 	GetOrdersByUser(ctx context.Context, userID string) ([]Order, error)
-	AddOrderForUser(ctx context.Context, externalOrderID string, userID string) (int, int, error)
+	AddOrderForUser(ctx context.Context, externalOrderID string, userID string) (int, error)
 	GetUserBalance(ctx context.Context, userID string) (UserBalance, error)
 	AddWithdrawalForUser(ctx context.Context, userID string, withdrawal Withdrawal) error
 	GetWithdrawalsForUser(ctx context.Context, userID string) ([]Withdrawal, error)
@@ -107,25 +107,21 @@ func (s *DBStorage) GetUserByLogin(ctx context.Context, a Auth) (Auth, error) {
 	return userData, nil
 }
 
-func (s *DBStorage) AddOrderForUser(ctx context.Context, id string, u string) (int, int, error) {
+func (s *DBStorage) AddOrderForUser(ctx context.Context, id string, u string) (int, error) {
 	row := s.db.QueryRowContext(ctx, "SELECT user_id FROM \"order\" WHERE external_id = $1", id)
 	var orderUserID sql.NullString
 	err := row.Scan(&orderUserID)
-	if err != nil {
+	if err != nil && orderUserID.Valid {
 		log.Printf("error while querying %s", err.Error())
-		return http.StatusInternalServerError, 0, err
-	}
-	if orderUserID.Valid {
-		log.Printf("error while querying %s", err.Error())
-		return http.StatusInternalServerError, 0, err
+		return http.StatusInternalServerError, err
 	}
 	if orderUserID.Valid {
 		if orderUserID.String == u {
 			log.Printf("same userID %s for orderID %s", u, id)
-			return http.StatusOK, 1, nil
+			return http.StatusOK, nil
 		} else {
 			log.Printf("another userID %s (instead of %s) for orderID %s", orderUserID.String, u, id)
-			return http.StatusConflict, 1, err
+			return http.StatusConflict, err
 		}
 	}
 	log.Printf("order with id %v not found in database", id)
@@ -138,10 +134,10 @@ func (s *DBStorage) AddOrderForUser(ctx context.Context, id string, u string) (i
 	err = row.Scan(&orderID)
 	if err != nil {
 		log.Printf("error while adding new order: %s", err.Error())
-		return http.StatusInternalServerError, 0, err
+		return http.StatusInternalServerError, err
 	}
 	log.Printf("new order with id %s added", orderID)
-	return http.StatusAccepted, 0, nil
+	return http.StatusAccepted, nil
 }
 
 func (s *DBStorage) GetOrdersByUser(ctx context.Context, u string) ([]Order, error) {

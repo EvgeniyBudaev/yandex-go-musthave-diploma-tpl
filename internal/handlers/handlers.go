@@ -244,51 +244,17 @@ func (strg *HandlerWithStorage) AddOrder(w http.ResponseWriter, r *http.Request)
 		return
 	}
 	userID := r.Context().Value(UserID).(string)
-	statusCode, founded, err := strg.storage.AddOrderForUser(r.Context(), string(data), userID)
-
-	if founded == 0 && err != nil {
-		statusCode = http.StatusInternalServerError
+	statusCode, err := strg.storage.AddOrderForUser(r.Context(), string(data), userID)
+	if err != nil {
 		log.Printf("error add order into db, %d", statusCode)
 		http.Error(w, "error add order into db", statusCode)
-		w.WriteHeader(statusCode)
-		w.Write(make([]byte, 0))
 		return
 	}
-	if founded == 1 && err != nil {
-		statusCode = http.StatusConflict
-		log.Printf("error add order into db, %d", statusCode)
-		http.Error(w, "error add order into db", statusCode)
-		w.WriteHeader(statusCode)
-		w.Write(make([]byte, 0))
-		return
-	}
-	//if founded == 1 && err == nil {
-	//	statusCode = http.StatusOK
-	//	log.Printf("error add order into db, %d", statusCode)
-	//}
-
-	//if err != nil {
-	//	log.Printf("error add order into db, %d", statusCode)
-	//	http.Error(w, "error add order into db", statusCode)
-	//	return
-	//}
-
-	if founded == 0 && err == nil {
+	if statusCode == http.StatusAccepted {
 		go func(orderNumber string) {
 			strg.ordersToProcess <- orderNumber
 		}(string(data))
-		statusCode = http.StatusAccepted
-		w.WriteHeader(statusCode)
-		w.Write(make([]byte, 0))
-		return
 	}
-
-	//if statusCode == http.StatusAccepted {
-	//	go func(orderNumber string) {
-	//		strg.ordersToProcess <- orderNumber
-	//	}(string(data))
-	//}
-
 	w.WriteHeader(statusCode)
 	w.Write(make([]byte, 0))
 }

@@ -140,7 +140,7 @@ func (mr *MockStorageMockRecorder) GetWithdrawalsForUser(ctx context.Context, ar
 }
 
 // Register mocks base method.
-func (m *MockStorage) Register(ctx context.Context, arg0 storage.Auth) (string, error) {
+func (m *MockStorage) Register(ctx context.Context, arg0 storage.Auth, passwordHash string) (string, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Register", arg0)
 	ret0, _ := ret[0].(string)

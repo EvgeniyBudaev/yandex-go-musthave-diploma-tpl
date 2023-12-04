@@ -174,13 +174,16 @@ func (strg *HandlerWithStorage) Register(w http.ResponseWriter, r *http.Request)
 		http.Error(w, "error unmarshal body", http.StatusBadRequest)
 		return
 	}
-	userID, err := strg.storage.Register(r.Context(), authData)
+	h := sha256.New()
+	h.Write([]byte(authData.Password))
+	passwordHash := hex.EncodeToString(h.Sum(nil))
+	userID, err := strg.storage.Register(r.Context(), authData, passwordHash)
 	if err != nil {
 		log.Println("error register user")
 		http.Error(w, "error register user", http.StatusInternalServerError)
 		return
 	}
-	h := utils.GenerateCookie()
+	h = utils.GenerateCookie()
 	h.Write([]byte(userID))
 	sign := h.Sum(nil)
 	newCookie := http.Cookie{Name: config.GetUserCookie(), Value: hex.EncodeToString(append([]byte(userID)[:], sign[:]...))}

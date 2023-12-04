@@ -2,9 +2,7 @@ package storage
 
 import (
 	"context"
-	"crypto/sha256"
 	"database/sql"
-	"encoding/hex"
 	"log"
 	"net/http"
 	"time"
@@ -57,7 +55,7 @@ func GetStorage(dbDSN string) Storage {
 }
 
 type Storage interface {
-	Register(ctx context.Context, registerData Auth) (string, error)
+	Register(ctx context.Context, registerData Auth, passwordHash string) (string, error)
 	GetUserByLogin(ctx context.Context, authData Auth) (Auth, error)
 	GetOrdersByUser(ctx context.Context, userID string) ([]Order, error)
 	AddOrderForUser(ctx context.Context, externalOrderID string, userID string) (int, error)
@@ -72,7 +70,7 @@ type DBStorage struct {
 	db *sql.DB
 }
 
-func (s *DBStorage) Register(ctx context.Context, a Auth) (string, error) {
+func (s *DBStorage) Register(ctx context.Context, a Auth, p string) (string, error) {
 	row := s.db.QueryRowContext(ctx, "SELECT id FROM \"user\" WHERE \"login\" = $1", a.Login)
 	var userID sql.NullString
 	err := row.Scan(&userID)
@@ -84,10 +82,7 @@ func (s *DBStorage) Register(ctx context.Context, a Auth) (string, error) {
 		log.Printf("user with login %s is existing", a.Login)
 		return "", err
 	}
-	h := sha256.New()
-	h.Write([]byte(a.Password))
-	passwordHash := hex.EncodeToString(h.Sum(nil))
-	row = s.db.QueryRowContext(ctx, "INSERT INTO \"user\" (\"login\", password_hash) VALUES ($1, $2) RETURNING id", a.Login, passwordHash)
+	row = s.db.QueryRowContext(ctx, "INSERT INTO \"user\" (\"login\", password_hash) VALUES ($1, $2) RETURNING id", a.Login, p)
 	if err := row.Scan(&userID); err != nil {
 		log.Printf("error %s", err.Error())
 		return "", err

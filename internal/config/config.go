@@ -18,7 +18,7 @@ type Config struct {
 
 var config Config
 
-func Init() {
+func Init() Config {
 	flag.StringVar(&config.ServerAddr, "a", "", "GopherMart server address")
 	flag.StringVar(&config.DBURI, "d", "", "GopherMart database address")
 	flag.StringVar(&config.AccrualSysAddr, "r", "", "Accrual system address")
@@ -58,15 +58,26 @@ func Init() {
 		config.SecretKeyToUserID = SecretKeyToUserIDEnv
 	}
 
+	config := Config{
+		ServerAddr:        config.ServerAddr,
+		DBURI:             config.DBURI,
+		AccrualSysAddr:    config.AccrualSysAddr,
+		MigrateSourceURL:  config.MigrateSourceURL,
+		UserCookie:        config.UserCookie,
+		UserID:            config.UserID,
+		SecretKeyToUserID: config.SecretKeyToUserID,
+	}
+
 	log.Printf("Got ServerAddr %s, DBURI %s, AccrualSysAddr %s to run GopherMart", config.ServerAddr,
 		config.DBURI, config.AccrualSysAddr)
+	return config
 }
 
 func GetServerAddr() string {
 	return config.ServerAddr
 }
 
-func GetDBURI() string {
+func (c *Config) GetDBURI() string {
 	return config.DBURI
 }
 

@@ -138,7 +138,7 @@ func TestRegisterHandler(t *testing.T) {
 				cookies := result.Cookies()
 				for _, cookie := range cookies {
 					if cookie.Name == config.GetUserCookie() {
-						h := auth.GenerateCookie()
+						h := auth.GenerateCookie(config)
 						h.Write([]byte(tc.mockResponseID))
 						sign := h.Sum(nil)
 						assert.Equal(t, hex.EncodeToString(append([]byte(tc.mockResponseID)[:], sign[:]...)), cookie.Value)

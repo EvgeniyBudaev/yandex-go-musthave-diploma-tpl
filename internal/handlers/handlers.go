@@ -101,7 +101,7 @@ func (strg *HandlerWithStorage) CheckAuth(next http.Handler) http.Handler {
 			http.Error(w, "error auth user", http.StatusUnauthorized)
 			return
 		}
-		h := auth.GenerateCookie()
+		h := auth.GenerateCookie(strg.config)
 		h.Write(data[:36])
 		sign := h.Sum(nil)
 		if hmac.Equal(sign, data[36:]) {
@@ -189,7 +189,7 @@ func (strg *HandlerWithStorage) Register(w http.ResponseWriter, r *http.Request)
 		http.Error(w, "error register user", http.StatusInternalServerError)
 		return
 	}
-	h = auth.GenerateCookie()
+	h = auth.GenerateCookie(strg.config)
 	h.Write([]byte(userID))
 	sign := h.Sum(nil)
 	newCookie := http.Cookie{Name: strg.config.GetUserCookie(), Value: hex.EncodeToString(append([]byte(userID)[:], sign[:]...))}
@@ -223,7 +223,7 @@ func (strg *HandlerWithStorage) Login(w http.ResponseWriter, r *http.Request) {
 	h.Write([]byte(authData.Password))
 	pswdHash := hex.EncodeToString(h.Sum(nil))
 	if pswdHash == userData.Password {
-		h := auth.GenerateCookie()
+		h := auth.GenerateCookie(strg.config)
 		h.Write([]byte(userData.UserID))
 		sign := h.Sum(nil)
 		newCookie := http.Cookie{Name: strg.config.GetUserCookie(), Value: hex.EncodeToString(append([]byte(userData.UserID)[:], sign[:]...))}

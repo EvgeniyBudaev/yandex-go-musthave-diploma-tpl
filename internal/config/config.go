@@ -97,6 +97,6 @@ func GetUserID() string {
 	return config.UserID
 }
 
-func GetSecretKeyToUserID() string {
+func (c *Config) GetSecretKeyToUserID() string {
 	return config.SecretKeyToUserID
 }

@@ -246,7 +246,7 @@ func (strg *HandlerWithStorage) AddOrder(w http.ResponseWriter, r *http.Request)
 	userID := r.Context().Value(UserID).(string)
 	_, founded, err := strg.storage.AddOrderForUser(r.Context(), string(data), userID)
 	//statusCode := http.StatusConflict
-	statusCode := http.StatusOK
+	statusCode := http.StatusConflict
 
 	if founded == 0 && err != nil {
 		statusCode = http.StatusInternalServerError

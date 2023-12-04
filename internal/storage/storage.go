@@ -91,13 +91,12 @@ func (s *DBStorage) Register(ctx context.Context, a Auth) (string, error) {
 	if err := row.Scan(&userID); err != nil {
 		log.Printf("error %s", err.Error())
 		return "", err
-	} else {
-		log.Printf("userID %v", userID)
-		if userID.Valid {
-			userIDValue := userID.String
-			log.Printf("new userID %s", userIDValue)
-			return userIDValue, nil
-		}
+	}
+	log.Printf("userID %v", userID)
+	if userID.Valid {
+		userIDValue := userID.String
+		log.Printf("new userID %s", userIDValue)
+		return userIDValue, nil
 	}
 	return "", err
 }

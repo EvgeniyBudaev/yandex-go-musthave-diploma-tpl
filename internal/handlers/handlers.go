@@ -240,7 +240,7 @@ func (strg *HandlerWithStorage) AddOrder(w http.ResponseWriter, r *http.Request)
 	}
 
 	_, errCode, err := ValidateOrder(string(data))
-	if err != nil {
+	if errCode != http.StatusOK {
 		log.Printf("bad order number %s", data)
 		http.Error(w, "bad order number", errCode)
 		return
@@ -320,7 +320,7 @@ func (strg *HandlerWithStorage) AddWithdrawal(w http.ResponseWriter, r *http.Req
 		return
 	}
 	_, errCode, err := ValidateOrder(withdrawal.Order)
-	if err != nil {
+	if errCode != http.StatusOK {
 		log.Printf("bad order number %s", withdrawal.Order)
 		http.Error(w, "bad order number", errCode)
 		return

@@ -115,15 +115,15 @@ func (s *DBStorage) AddOrderForUser(ctx context.Context, id string, u string) (i
 		log.Printf("error while querying %s", err.Error())
 		return http.StatusInternalServerError, err
 	}
-	if orderUserID.Valid {
-		if orderUserID.String == u {
-			log.Printf("same userID %s for orderID %s", u, id)
-			return http.StatusOK, nil
-		} else {
-			log.Printf("another userID %s (instead of %s) for orderID %s", orderUserID.String, u, id)
-			return http.StatusConflict, err
-		}
-	}
+	//if orderUserID.Valid {
+	//	if orderUserID.String == u {
+	//		log.Printf("same userID %s for orderID %s", u, id)
+	//		return http.StatusOK, nil
+	//	} else {
+	//		log.Printf("another userID %s (instead of %s) for orderID %s", orderUserID.String, u, id)
+	//		return http.StatusConflict, err
+	//	}
+	//}
 	log.Printf("order with id %v not found in database", id)
 	row = s.db.QueryRowContext(
 		ctx,

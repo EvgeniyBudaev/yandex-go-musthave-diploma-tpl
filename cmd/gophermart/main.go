@@ -11,6 +11,6 @@ func main() {
 	configInit := config.Init()
 	db.RunMigrations(configInit.GetDBURI())
 	storageForHandler := storage.NewStorage(configInit.GetDBURI())
-	serverToRun := server.CreateServer(storageForHandler)
+	serverToRun := server.CreateServer(storageForHandler, configInit)
 	serverToRun.ListenAndServe()
 }

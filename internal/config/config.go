@@ -18,7 +18,7 @@ type Config struct {
 
 var config Config
 
-func Init() Config {
+func Init() *Config {
 	flag.StringVar(&config.ServerAddr, "a", "", "GopherMart server address")
 	flag.StringVar(&config.DBURI, "d", "", "GopherMart database address")
 	flag.StringVar(&config.AccrualSysAddr, "r", "", "Accrual system address")
@@ -70,10 +70,10 @@ func Init() Config {
 
 	log.Printf("Got ServerAddr %s, DBURI %s, AccrualSysAddr %s to run GopherMart", config.ServerAddr,
 		config.DBURI, config.AccrualSysAddr)
-	return config
+	return &config
 }
 
-func GetServerAddr() string {
+func (c *Config) GetServerAddr() string {
 	return config.ServerAddr
 }
 

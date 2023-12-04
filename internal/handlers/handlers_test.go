@@ -121,7 +121,7 @@ func TestRegisterHandler(t *testing.T) {
 	for _, tc := range tt {
 		t.Run(tc.name, func(t *testing.T) {
 			ctx := context.Background()
-			configInit := config.Init()
+			config := config.Init()
 			marshalledData, _ := json.Marshal(tc.registerData)
 			request := httptest.NewRequest(http.MethodGet, "/api/user/register", bytes.NewBuffer(marshalledData))
 			w := httptest.NewRecorder()
@@ -129,7 +129,7 @@ func TestRegisterHandler(t *testing.T) {
 			defer ctrl.Finish()
 			storage := mocks.NewMockStorage(ctrl)
 			storage.EXPECT().Register(ctx, tc.registerData).Return(tc.mockResponseID, tc.mockResponseErrCode)
-			handler := http.HandlerFunc(NewHandlerWithStorage(storage, configInit).Register)
+			handler := http.HandlerFunc(NewHandlerWithStorage(storage, config).Register)
 			handler.ServeHTTP(w, request)
 			result := w.Result()
 			defer result.Body.Close()

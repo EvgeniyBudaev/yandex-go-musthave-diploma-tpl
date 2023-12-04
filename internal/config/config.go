@@ -89,7 +89,7 @@ func (c *Config) GetMigrateSourceURL() string {
 	return config.MigrateSourceURL
 }
 
-func GetUserCookie() string {
+func (c *Config) GetUserCookie() string {
 	return config.UserCookie
 }
 

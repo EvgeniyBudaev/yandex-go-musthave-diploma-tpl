@@ -83,7 +83,7 @@ func (strg *HandlerWithStorage) CheckAuth(next http.Handler) http.Handler {
 			next.ServeHTTP(w, r)
 			return
 		}
-		cookie, err := (*r).Cookie(config.GetUserCookie())
+		cookie, err := (*r).Cookie(strg.config.GetUserCookie())
 		if cookie != nil && err != nil {
 			log.Println(err.Error())
 			http.Error(w, "could not auth user", http.StatusUnauthorized)
@@ -192,7 +192,7 @@ func (strg *HandlerWithStorage) Register(w http.ResponseWriter, r *http.Request)
 	h = auth.GenerateCookie()
 	h.Write([]byte(userID))
 	sign := h.Sum(nil)
-	newCookie := http.Cookie{Name: config.GetUserCookie(), Value: hex.EncodeToString(append([]byte(userID)[:], sign[:]...))}
+	newCookie := http.Cookie{Name: strg.config.GetUserCookie(), Value: hex.EncodeToString(append([]byte(userID)[:], sign[:]...))}
 	log.Printf("sign %v, cookie %v", sign, []byte(userID))
 	http.SetCookie(w, &newCookie)
 	w.WriteHeader(http.StatusOK)
@@ -226,7 +226,7 @@ func (strg *HandlerWithStorage) Login(w http.ResponseWriter, r *http.Request) {
 		h := auth.GenerateCookie()
 		h.Write([]byte(userData.UserID))
 		sign := h.Sum(nil)
-		newCookie := http.Cookie{Name: config.GetUserCookie(), Value: hex.EncodeToString(append([]byte(userData.UserID)[:], sign[:]...))}
+		newCookie := http.Cookie{Name: strg.config.GetUserCookie(), Value: hex.EncodeToString(append([]byte(userData.UserID)[:], sign[:]...))}
 		http.SetCookie(w, &newCookie)
 		w.WriteHeader(http.StatusOK)
 		w.Write(make([]byte, 0))

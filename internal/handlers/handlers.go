@@ -113,11 +113,11 @@ func CheckAuth(next http.Handler) http.Handler {
 	})
 }
 
-func (strg *HandlerWithStorage) GetStatusesDaemon() {
+func (strg *HandlerWithStorage) GetStatusesDaemon(c *config.Config) {
 	ctx := context.Background()
 	for orderNumber := range strg.ordersToProcess {
 		log.Printf("order %s to process", orderNumber)
-		response, err := strg.client.Get(config.GetAccrualSysAddr() + "/api/orders/" + orderNumber)
+		response, err := strg.client.Get(c.GetAccrualSysAddr() + "/api/orders/" + orderNumber)
 		if err != nil {
 			log.Printf("error %s", err.Error())
 			continue

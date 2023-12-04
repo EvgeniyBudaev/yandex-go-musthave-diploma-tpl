@@ -8,7 +8,7 @@ import (
 )
 
 func CreateServer(s storage.Storage, c *config.Config) *http.Server {
-	router := routes.InitRouter(s)
+	router := routes.InitRouter(s, c)
 	server := &http.Server{
 		Addr:    c.GetServerAddr(),
 		Handler: router,

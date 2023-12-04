@@ -81,7 +81,7 @@ func (c *Config) GetDBURI() string {
 	return config.DBURI
 }
 
-func GetAccrualSysAddr() string {
+func (c *Config) GetAccrualSysAddr() string {
 	return config.AccrualSysAddr
 }
 

@@ -251,11 +251,17 @@ func (strg *HandlerWithStorage) AddOrder(w http.ResponseWriter, r *http.Request)
 		statusCode = http.StatusInternalServerError
 		log.Printf("error add order into db, %d", statusCode)
 		http.Error(w, "error add order into db", statusCode)
+		w.WriteHeader(statusCode)
+		w.Write(make([]byte, 0))
+		return
 	}
 	if founded && err != nil {
 		statusCode = http.StatusConflict
 		log.Printf("error add order into db, %d", statusCode)
 		http.Error(w, "error add order into db", statusCode)
+		w.WriteHeader(statusCode)
+		w.Write(make([]byte, 0))
+		return
 	}
 	//if founded && err == nil {
 	//	statusCode = http.StatusOK
@@ -273,6 +279,9 @@ func (strg *HandlerWithStorage) AddOrder(w http.ResponseWriter, r *http.Request)
 			strg.ordersToProcess <- orderNumber
 		}(string(data))
 		statusCode = http.StatusAccepted
+		w.WriteHeader(statusCode)
+		w.Write(make([]byte, 0))
+		return
 	}
 
 	//if statusCode == http.StatusAccepted {

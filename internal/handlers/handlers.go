@@ -261,7 +261,7 @@ func (strg *HandlerWithStorage) AddOrder(w http.ResponseWriter, r *http.Request)
 			strg.ordersToProcess <- orderNumber
 		}(string(data))
 	}
-	w.WriteHeader(statusCode)
+	w.WriteHeader(http.StatusAccepted)
 	w.Write(make([]byte, 0))
 }
 

@@ -69,7 +69,7 @@ func TestValidateOrder(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			result, errCode, _ := ValidateOrder(tt.order)
+			result, errCode := ValidateOrder(tt.order)
 			assert.Equal(t, tt.resultOrder, result)
 			assert.Equal(t, tt.errCode, errCode)
 		})

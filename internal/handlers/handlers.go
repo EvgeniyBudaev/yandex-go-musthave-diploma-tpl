@@ -37,15 +37,15 @@ func GetHandlerWithStorage(storage storage.Storage) *HandlerWithStorage {
 	return &HandlerWithStorage{storage: storage, client: http.Client{}, ordersToProcess: make(chan string, 10)}
 }
 
-func ValidateOrder(order string) (uint, int, error) {
+func ValidateOrder(order string) (uint, int) {
 	orderNum, err := strconv.Atoi(order)
 	if err != nil {
 		log.Printf("error while casting order to int %s", err.Error())
-		return 0, http.StatusBadRequest, err
+		return 0, http.StatusBadRequest
 	}
 	if orderNum < 0 {
 		log.Println("Get orderNum < 0")
-		return 0, http.StatusBadRequest, err
+		return 0, http.StatusBadRequest
 	}
 	sum := 0
 	if len(order)%2 == 0 {
@@ -74,9 +74,9 @@ func ValidateOrder(order string) (uint, int, error) {
 		}
 	}
 	if sum%10 == 0 {
-		return uint(orderNum), http.StatusOK, nil
+		return uint(orderNum), http.StatusOK
 	} else {
-		return 0, http.StatusUnprocessableEntity, err
+		return 0, http.StatusUnprocessableEntity
 	}
 }
 
@@ -239,7 +239,7 @@ func (strg *HandlerWithStorage) AddOrder(w http.ResponseWriter, r *http.Request)
 		log.Printf("error while reading body: ")
 	}
 
-	_, errCode, err := ValidateOrder(string(data))
+	_, errCode := ValidateOrder(string(data))
 	if errCode != http.StatusOK {
 		log.Printf("bad order number %s", data)
 		http.Error(w, "bad order number", errCode)
@@ -319,7 +319,7 @@ func (strg *HandlerWithStorage) AddWithdrawal(w http.ResponseWriter, r *http.Req
 		http.Error(w, "error while getting data", http.StatusInternalServerError)
 		return
 	}
-	_, errCode, err := ValidateOrder(withdrawal.Order)
+	_, errCode := ValidateOrder(withdrawal.Order)
 	if errCode != http.StatusOK {
 		log.Printf("bad order number %s", withdrawal.Order)
 		http.Error(w, "bad order number", errCode)
@@ -328,7 +328,7 @@ func (strg *HandlerWithStorage) AddWithdrawal(w http.ResponseWriter, r *http.Req
 	err = strg.storage.AddWithdrawalForUser(r.Context(), userID, withdrawal)
 	if err != nil {
 		log.Printf("errorCode %v", http.StatusInternalServerError)
-		http.Error(w, "error from AddWithdrawalForUser", errCode)
+		http.Error(w, "error from AddWithdrawalForUser", http.StatusInternalServerError)
 		return
 	}
 	w.WriteHeader(http.StatusOK)

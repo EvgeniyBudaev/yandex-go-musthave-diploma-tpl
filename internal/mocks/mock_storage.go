@@ -36,11 +36,11 @@ func (m *MockStorage) EXPECT() *MockStorageMockRecorder {
 }
 
 // AddOrderForUser mocks base method.
-func (m *MockStorage) AddOrderForUser(ctx context.Context, arg0, arg1 string) (int, bool, error) {
+func (m *MockStorage) AddOrderForUser(ctx context.Context, arg0, arg1 string) (int, int, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "AddOrderForUser", arg0, arg1)
 	ret0, _ := ret[0].(int)
-	ret1, _ := ret[0].(bool)
+	ret1, _ := ret[0].(int)
 	ret2, _ := ret[1].(error)
 	return ret0, ret1, ret2
 }

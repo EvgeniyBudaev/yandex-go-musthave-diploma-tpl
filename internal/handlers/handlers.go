@@ -248,7 +248,7 @@ func (strg *HandlerWithStorage) AddOrder(w http.ResponseWriter, r *http.Request)
 	//statusCode := http.StatusConflict
 	statusCode := http.StatusOK
 
-	if !founded && err != nil {
+	if founded == 0 && err != nil {
 		statusCode = http.StatusInternalServerError
 		log.Printf("error add order into db, %d", statusCode)
 		http.Error(w, "error add order into db", statusCode)
@@ -256,7 +256,7 @@ func (strg *HandlerWithStorage) AddOrder(w http.ResponseWriter, r *http.Request)
 		w.Write(make([]byte, 0))
 		return
 	}
-	if founded && err != nil {
+	if founded == 1 && err != nil {
 		statusCode = http.StatusConflict
 		log.Printf("error add order into db, %d", statusCode)
 		http.Error(w, "error add order into db", statusCode)
@@ -264,10 +264,10 @@ func (strg *HandlerWithStorage) AddOrder(w http.ResponseWriter, r *http.Request)
 		w.Write(make([]byte, 0))
 		return
 	}
-	//if founded && err == nil {
-	//	statusCode = http.StatusOK
-	//	log.Printf("error add order into db, %d", statusCode)
-	//}
+	if founded == 1 && err == nil {
+		statusCode = http.StatusOK
+		log.Printf("error add order into db, %d", statusCode)
+	}
 
 	//if err != nil {
 	//	log.Printf("error add order into db, %d", statusCode)
@@ -275,7 +275,7 @@ func (strg *HandlerWithStorage) AddOrder(w http.ResponseWriter, r *http.Request)
 	//	return
 	//}
 
-	if !founded && err == nil {
+	if founded == 0 && err == nil {
 		go func(orderNumber string) {
 			strg.ordersToProcess <- orderNumber
 		}(string(data))

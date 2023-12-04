@@ -248,22 +248,25 @@ func (strg *HandlerWithStorage) AddOrder(w http.ResponseWriter, r *http.Request)
 	if founded {
 		if err != nil {
 			http.Error(w, "error add order into db", http.StatusConflict)
+			w.WriteHeader(http.StatusConflict)
 			return
 
 		}
 		http.Error(w, "error add order into db", http.StatusOK)
+		w.WriteHeader(http.StatusOK)
 		return
 	}
 	if !founded {
 		if err != nil {
 			http.Error(w, "error add order into db", http.StatusInternalServerError)
+			w.WriteHeader(http.StatusInternalServerError)
 			return
 		}
 		go func(orderNumber string) {
 			strg.ordersToProcess <- orderNumber
 		}(string(data))
+		w.WriteHeader(http.StatusAccepted)
 	}
-	w.WriteHeader(http.StatusAccepted)
 	w.Write(make([]byte, 0))
 }
 

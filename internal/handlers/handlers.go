@@ -37,15 +37,15 @@ func GetHandlerWithStorage(storage storage.Storage) *HandlerWithStorage {
 	return &HandlerWithStorage{storage: storage, client: http.Client{}, ordersToProcess: make(chan string, 10)}
 }
 
-func ValidateOrder(order string) (uint, int) {
+func ValidateOrder(order string) (uint, int, error) {
 	orderNum, err := strconv.Atoi(order)
 	if err != nil {
 		log.Printf("error while casting order to int %s", err.Error())
-		return 0, http.StatusBadRequest
+		return 0, http.StatusBadRequest, err
 	}
 	if orderNum < 0 {
 		log.Println("Get orderNum < 0")
-		return 0, http.StatusBadRequest
+		return 0, http.StatusBadRequest, err
 	}
 	sum := 0
 	if len(order)%2 == 0 {
@@ -74,9 +74,9 @@ func ValidateOrder(order string) (uint, int) {
 		}
 	}
 	if sum%10 == 0 {
-		return uint(orderNum), http.StatusOK
+		return uint(orderNum), http.StatusOK, nil
 	} else {
-		return 0, http.StatusUnprocessableEntity
+		return 0, http.StatusUnprocessableEntity, err
 	}
 }
 
@@ -239,10 +239,10 @@ func (strg *HandlerWithStorage) AddOrder(w http.ResponseWriter, r *http.Request)
 		log.Printf("error while reading body: ")
 	}
 
-	_, errCode := ValidateOrder(string(data))
-	if errCode != http.StatusOK {
-		log.Printf("bad order number %s", data)
-		http.Error(w, "bad order number", errCode)
+	_, errCode, err := ValidateOrder(string(data))
+	if err != nil {
+		log.Printf("bad order number %s with errCode %d", data, errCode)
+		http.Error(w, "bad order number", http.StatusUnprocessableEntity)
 		return
 	}
 	userID := r.Context().Value(UserID).(string)
@@ -319,10 +319,10 @@ func (strg *HandlerWithStorage) AddWithdrawal(w http.ResponseWriter, r *http.Req
 		http.Error(w, "error while getting data", http.StatusInternalServerError)
 		return
 	}
-	_, errCode := ValidateOrder(withdrawal.Order)
-	if errCode != http.StatusOK {
-		log.Printf("bad order number %s", withdrawal.Order)
-		http.Error(w, "bad order number", errCode)
+	_, errCode, err := ValidateOrder(withdrawal.Order)
+	if err != nil {
+		log.Printf("bad order number %s with errCode %d", withdrawal.Order, errCode)
+		http.Error(w, "bad order number", http.StatusUnprocessableEntity)
 		return
 	}
 	err = strg.storage.AddWithdrawalForUser(r.Context(), userID, withdrawal)

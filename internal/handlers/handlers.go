@@ -18,8 +18,12 @@ import (
 
 type userCtxName string
 
-const statusInvalid = "INVALID"
-const statusProcessed = "PROCESSED"
+type orderStatus string
+
+const (
+	orderStatusInvalid   orderStatus = "INVALID"
+	orderStatusProcessed orderStatus = "PROCESSED"
+)
 
 var UserID = userCtxName(config.GetUserID())
 
@@ -140,7 +144,7 @@ func (strg *HandlerWithStorage) GetStatusesDaemon() {
 			if err != nil {
 				return
 			}
-			if newOrder.Status != statusInvalid && newOrder.Status != statusProcessed {
+			if newOrder.Status != string(orderStatusInvalid) && newOrder.Status != string(orderStatusProcessed) {
 				go func(orderNumber string) {
 					strg.ordersToProcess <- orderNumber
 				}(orderNumber)

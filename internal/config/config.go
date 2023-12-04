@@ -12,7 +12,6 @@ type Config struct {
 	AccrualSysAddr    string `env:"ACCRUAL_SYSTEM_ADDRESS"`
 	MigrateSourceURL  string `env:"MIGRATE_SOURCE_URL"`
 	UserCookie        string `env:"USER_COOKIE"`
-	UserID            string `env:"USERID"`
 	SecretKeyToUserID string `env:"SECRET_KEY_TO_USER_ID"`
 }
 
@@ -25,7 +24,6 @@ func Init() *Config {
 	flag.StringVar(&config.MigrateSourceURL, "m", "file://internal/db/migrations",
 		"Migrate source URL")
 	flag.StringVar(&config.UserCookie, "uc", "UserCookie", "User cookie")
-	flag.StringVar(&config.UserID, "uid", "UserID", "User ID")
 	flag.StringVar(&config.SecretKeyToUserID, "sk", "SecretKeyToUserID", "Secret key to user ID")
 	flag.Parse()
 
@@ -49,10 +47,6 @@ func Init() *Config {
 	if UserCookieEnv != "" {
 		config.UserCookie = UserCookieEnv
 	}
-	UserIDEnv := os.Getenv("USERID")
-	if UserIDEnv != "" {
-		config.UserID = UserIDEnv
-	}
 	SecretKeyToUserIDEnv := os.Getenv("SECRET_KEY_TO_USER_ID")
 	if SecretKeyToUserIDEnv != "" {
 		config.SecretKeyToUserID = SecretKeyToUserIDEnv
@@ -64,7 +58,6 @@ func Init() *Config {
 		AccrualSysAddr:    config.AccrualSysAddr,
 		MigrateSourceURL:  config.MigrateSourceURL,
 		UserCookie:        config.UserCookie,
-		UserID:            config.UserID,
 		SecretKeyToUserID: config.SecretKeyToUserID,
 	}
 
@@ -91,10 +84,6 @@ func (c *Config) GetMigrateSourceURL() string {
 
 func (c *Config) GetUserCookie() string {
 	return config.UserCookie
-}
-
-func GetUserID() string {
-	return config.UserID
 }
 
 func (c *Config) GetSecretKeyToUserID() string {

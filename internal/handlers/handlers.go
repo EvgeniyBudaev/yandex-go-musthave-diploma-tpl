@@ -17,7 +17,6 @@ import (
 )
 
 type userCtxName string
-
 type orderStatus string
 
 const (
@@ -25,7 +24,7 @@ const (
 	orderStatusProcessed orderStatus = "PROCESSED"
 )
 
-var UserID = userCtxName(config.GetUserID())
+var UserID = userCtxName("UserID")
 
 type HandlerWithStorage struct {
 	storage         storage.Storage

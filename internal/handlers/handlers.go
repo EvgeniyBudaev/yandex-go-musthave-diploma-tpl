@@ -242,7 +242,7 @@ func (strg *HandlerWithStorage) AddOrder(w http.ResponseWriter, r *http.Request)
 	_, errCode, err := ValidateOrder(string(data))
 	if err != nil {
 		log.Printf("bad order number %s with errCode %d", data, errCode)
-		http.Error(w, "bad order number", http.StatusUnprocessableEntity)
+		http.Error(w, "bad order number", errCode)
 		return
 	}
 	userID := r.Context().Value(UserID).(string)
@@ -328,7 +328,7 @@ func (strg *HandlerWithStorage) AddWithdrawal(w http.ResponseWriter, r *http.Req
 	err = strg.storage.AddWithdrawalForUser(r.Context(), userID, withdrawal)
 	if err != nil {
 		log.Printf("errorCode %v", http.StatusInternalServerError)
-		http.Error(w, "error from AddWithdrawalForUser", http.StatusInternalServerError)
+		http.Error(w, "error from AddWithdrawalForUser", errCode)
 		return
 	}
 	w.WriteHeader(http.StatusOK)

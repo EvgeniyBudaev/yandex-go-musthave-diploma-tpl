@@ -16,6 +16,7 @@ import (
 	"time"
 )
 
+type UserIDKey string
 type orderStatus string
 
 const (
@@ -100,8 +101,9 @@ func (strg *HandlerWithStorage) CheckAuth(next http.Handler) http.Handler {
 		h := auth.GenerateCookie(strg.config)
 		h.Write(data[:36])
 		sign := h.Sum(nil)
+		userIDContextKey := UserIDKey(strg.config.UserID)
 		if hmac.Equal(sign, data[36:]) {
-			ctx := context.WithValue(r.Context(), strg.config.UserID, string(data[:36]))
+			ctx := context.WithValue(r.Context(), userIDContextKey, string(data[:36]))
 			next.ServeHTTP(w, r.WithContext(ctx))
 			return
 		}

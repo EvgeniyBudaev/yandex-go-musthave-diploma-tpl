@@ -16,16 +16,12 @@ import (
 	"time"
 )
 
-type userCtxName string
-
 type orderStatus string
 
 const (
 	orderStatusInvalid   orderStatus = "INVALID"
 	orderStatusProcessed orderStatus = "PROCESSED"
 )
-
-var UserID = userCtxName(config.GetUserID())
 
 type HandlerWithStorage struct {
 	storage         storage.Storage
@@ -105,7 +101,7 @@ func (strg *HandlerWithStorage) CheckAuth(next http.Handler) http.Handler {
 		h.Write(data[:36])
 		sign := h.Sum(nil)
 		if hmac.Equal(sign, data[36:]) {
-			ctx := context.WithValue(r.Context(), UserID, string(data[:36]))
+			ctx := context.WithValue(r.Context(), strg.config.UserID, string(data[:36]))
 			next.ServeHTTP(w, r.WithContext(ctx))
 			return
 		}
@@ -249,7 +245,7 @@ func (strg *HandlerWithStorage) AddOrder(w http.ResponseWriter, r *http.Request)
 		http.Error(w, "bad order number", errCode)
 		return
 	}
-	userID := r.Context().Value(UserID).(string)
+	userID := r.Context().Value(strg.config.UserID).(string)
 	statusCode, err := strg.storage.AddOrderForUser(r.Context(), string(data), userID)
 	if err != nil {
 		log.Printf("error add order into db, %d", statusCode)
@@ -267,7 +263,7 @@ func (strg *HandlerWithStorage) AddOrder(w http.ResponseWriter, r *http.Request)
 
 func (strg *HandlerWithStorage) GetOrders(w http.ResponseWriter, r *http.Request) {
 	log.Println("Got GetOrders request")
-	userID := r.Context().Value(UserID).(string)
+	userID := r.Context().Value(strg.config.UserID).(string)
 	orders, err := strg.storage.GetOrdersByUser(r.Context(), userID)
 	if err != nil {
 		log.Printf("error %v", err)
@@ -292,7 +288,7 @@ func (strg *HandlerWithStorage) GetOrders(w http.ResponseWriter, r *http.Request
 }
 
 func (strg *HandlerWithStorage) GetBalance(w http.ResponseWriter, r *http.Request) {
-	userBalance, err := strg.storage.GetUserBalance(r.Context(), r.Context().Value(UserID).(string))
+	userBalance, err := strg.storage.GetUserBalance(r.Context(), r.Context().Value(strg.config.UserID).(string))
 	if err != nil {
 		http.Error(w, "error get user balance", http.StatusInternalServerError)
 		return
@@ -309,7 +305,7 @@ func (strg *HandlerWithStorage) GetBalance(w http.ResponseWriter, r *http.Reques
 }
 
 func (strg *HandlerWithStorage) AddWithdrawal(w http.ResponseWriter, r *http.Request) {
-	userID := r.Context().Value(UserID).(string)
+	userID := r.Context().Value(strg.config.UserID).(string)
 	data, err := io.ReadAll(r.Body)
 	if err != nil {
 		log.Printf("error %s", err.Error())
@@ -340,7 +336,7 @@ func (strg *HandlerWithStorage) AddWithdrawal(w http.ResponseWriter, r *http.Req
 }
 
 func (strg *HandlerWithStorage) GetWithdrawals(w http.ResponseWriter, r *http.Request) {
-	userID := r.Context().Value(UserID).(string)
+	userID := r.Context().Value(strg.config.UserID).(string)
 	withdrawals, err := strg.storage.GetWithdrawalsForUser(r.Context(), userID)
 	if err != nil {
 		log.Printf("errCode %v", http.StatusInternalServerError)

@@ -93,7 +93,7 @@ func (c *Config) GetUserCookie() string {
 	return config.UserCookie
 }
 
-func GetUserID() string {
+func (c *Config) GetUserID() string {
 	return config.UserID
 }
 

@@ -45,7 +45,7 @@ type Withdrawal struct {
 	ProcessedAt time.Time `json:"processed_at,omitempty"`
 }
 
-func GetStorage(dbDSN string) Storage {
+func NewStorage(dbDSN string) Storage {
 	db, err := sql.Open("pgx", dbDSN)
 	if err != nil {
 		log.Printf("error while starting db %s", err.Error())

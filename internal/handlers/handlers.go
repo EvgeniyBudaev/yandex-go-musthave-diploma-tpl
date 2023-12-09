@@ -6,8 +6,10 @@ import (
 	"crypto/sha256"
 	"encoding/hex"
 	"encoding/json"
+	"errors"
 	"github.com/EvgeniyBudaev/yandex-go-musthave-diploma-tpl/internal/auth"
 	"github.com/EvgeniyBudaev/yandex-go-musthave-diploma-tpl/internal/config"
+	customError "github.com/EvgeniyBudaev/yandex-go-musthave-diploma-tpl/internal/errors"
 	"github.com/EvgeniyBudaev/yandex-go-musthave-diploma-tpl/internal/storage"
 	"io"
 	"log"
@@ -249,18 +251,29 @@ func (strg *HandlerWithStorage) AddOrder(w http.ResponseWriter, r *http.Request)
 		return
 	}
 	userID := r.Context().Value(UserID).(string)
-	statusCode, err := strg.storage.AddOrderForUser(r.Context(), string(data), userID)
-	if err != nil {
-		log.Printf("error add order into db, %d", statusCode)
-		http.Error(w, "error add order into db", statusCode)
+	err = strg.storage.AddOrderForUser(r.Context(), string(data), userID)
+	if errors.Is(err, customError.ErrOrderIsExistThisUser) {
+		w.WriteHeader(http.StatusOK)
+		w.Write(make([]byte, 0))
 		return
 	}
-	if statusCode == http.StatusAccepted {
-		go func(orderNumber string) {
-			strg.ordersToProcess <- orderNumber
-		}(string(data))
+	if errors.Is(err, customError.ErrOrderIsExistAnotherUser) {
+		w.WriteHeader(http.StatusConflict)
+		http.Error(w, "error add order into db", http.StatusConflict)
+		return
 	}
-	w.WriteHeader(statusCode)
+	if err != nil {
+		log.Printf("error add order into db, %d", http.StatusInternalServerError)
+		w.WriteHeader(http.StatusInternalServerError)
+		http.Error(w, "error add order into db", http.StatusInternalServerError)
+		return
+	}
+
+	go func(orderNumber string) {
+		strg.ordersToProcess <- orderNumber
+	}(string(data))
+
+	w.WriteHeader(http.StatusAccepted)
 	w.Write(make([]byte, 0))
 }
 

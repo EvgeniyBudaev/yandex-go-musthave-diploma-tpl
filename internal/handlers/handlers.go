@@ -254,7 +254,6 @@ func (strg *HandlerWithStorage) AddOrder(w http.ResponseWriter, r *http.Request)
 	err = strg.storage.AddOrderForUser(r.Context(), string(data), userID)
 	if errors.Is(err, customError.ErrOrderIsExistThisUser) {
 		w.WriteHeader(http.StatusOK)
-		w.Write(make([]byte, 0))
 		return
 	}
 	if errors.Is(err, customError.ErrOrderIsExistAnotherUser) {

@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	wrapError "github.com/EvgeniyBudaev/yandex-go-musthave-diploma-tpl/internal/errors"
+	_ "github.com/jackc/pgx/v5/stdlib"
 	"log"
 	"net/http"
 	"time"
@@ -29,7 +30,7 @@ type OrderFromDB struct {
 	UploadedAt time.Time
 }
 
-type OrderFromBlackBox struct {
+type AccrualDto struct {
 	Order   string  `json:"order"`
 	Status  string  `json:"status"`
 	Accrual float64 `json:"accrual,omitempty"`
@@ -64,7 +65,7 @@ type Storage interface {
 	AddWithdrawalForUser(ctx context.Context, userID string, withdrawal Withdrawal) error
 	GetWithdrawalsForUser(ctx context.Context, userID string) ([]Withdrawal, error)
 	GetOrdersInProgress(ctx context.Context) ([]Order, error)
-	UpdateOrder(ctx context.Context, order OrderFromBlackBox) error
+	UpdateOrder(ctx context.Context, order AccrualDto) error
 }
 
 type DBStorage struct {
@@ -282,7 +283,7 @@ func (s *DBStorage) GetOrdersInProgress(ctx context.Context) ([]Order, error) {
 	return orderList, nil
 }
 
-func (s *DBStorage) UpdateOrder(ctx context.Context, o OrderFromBlackBox) error {
+func (s *DBStorage) UpdateOrder(ctx context.Context, o AccrualDto) error {
 	tx, err := s.db.BeginTx(ctx, nil)
 	if err != nil {
 		log.Printf("error %s", err.Error())

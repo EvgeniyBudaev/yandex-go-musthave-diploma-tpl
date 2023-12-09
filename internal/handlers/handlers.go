@@ -125,7 +125,7 @@ func (strg *HandlerWithStorage) GetStatusesDaemon(c *config.Config) {
 			continue
 		}
 		if response.StatusCode == http.StatusOK {
-			var newOrder storage.OrderFromBlackBox
+			var newOrder storage.AccrualDto
 			data, err := io.ReadAll(response.Body)
 			if err != nil {
 				log.Printf("error %s", err.Error())

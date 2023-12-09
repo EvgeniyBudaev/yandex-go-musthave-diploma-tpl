@@ -1,6 +1,7 @@
 package errors
 
 import (
+	"errors"
 	"fmt"
 )
 
@@ -35,3 +36,6 @@ func NewOrderIsExistThisUserError(msg string, err error) error {
 func (e *OrderIsExistThisUserError) Error() string {
 	return fmt.Sprintf("[%s] %v", e.Message, e.Err)
 }
+
+var ErrTooManyRequests = errors.New("too many requests")
+var ErrNoContent = errors.New("no content")

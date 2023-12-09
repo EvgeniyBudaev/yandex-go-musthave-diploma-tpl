@@ -155,7 +155,7 @@ func (mr *MockStorageMockRecorder) Register(ctx context.Context, arg0 interface{
 }
 
 // UpdateOrder mocks base method.
-func (m *MockStorage) UpdateOrder(ctx context.Context, arg0 storage.OrderFromBlackBox) error {
+func (m *MockStorage) UpdateOrder(ctx context.Context, arg0 storage.AccrualDto) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "UpdateOrder", arg0)
 	ret0, _ := ret[0].(error)

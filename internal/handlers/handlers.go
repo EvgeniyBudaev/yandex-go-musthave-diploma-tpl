@@ -15,16 +15,9 @@ import (
 	"log"
 	"net/http"
 	"strconv"
-	"time"
 )
 
 type userCtxName string
-type orderStatus string
-
-const (
-	orderStatusInvalid   orderStatus = "INVALID"
-	orderStatusProcessed orderStatus = "PROCESSED"
-)
 
 var UserID = userCtxName("UserID")
 
@@ -113,57 +106,6 @@ func (strg *HandlerWithStorage) CheckAuth(next http.Handler) http.Handler {
 		log.Println("get not equal sign for UserID")
 		http.Error(w, "error auth user", http.StatusUnauthorized)
 	})
-}
-
-func (strg *HandlerWithStorage) GetStatusesDaemon(c *config.Config) {
-	ctx := context.Background()
-	for orderNumber := range strg.ordersToProcess {
-		log.Printf("order %s to process", orderNumber)
-		response, err := strg.client.Get(c.GetAccrualSysAddr() + "/api/orders/" + orderNumber)
-		if err != nil {
-			log.Printf("error %s", err.Error())
-			continue
-		}
-		if response.StatusCode == http.StatusOK {
-			var newOrder storage.AccrualDto
-			data, err := io.ReadAll(response.Body)
-			if err != nil {
-				log.Printf("error %s", err.Error())
-				continue
-			}
-			err = json.Unmarshal(data, &newOrder)
-			if err != nil {
-				log.Printf("error %s", err.Error())
-				continue
-			}
-			newOrder.Order = orderNumber
-			err = strg.storage.UpdateOrder(ctx, newOrder)
-			if err != nil {
-				return
-			}
-			if newOrder.Status != string(orderStatusInvalid) && newOrder.Status != string(orderStatusProcessed) {
-				go func(orderNumber string) {
-					strg.ordersToProcess <- orderNumber
-				}(orderNumber)
-			}
-			response.Body.Close()
-		} else {
-			if response.StatusCode == http.StatusTooManyRequests {
-				retryAfter, err := strconv.Atoi(response.Header.Get("Retry-After"))
-				if err != nil {
-					log.Printf("get 429 StatusTooManyRequests, need to sleep a bit: %d seconds", retryAfter)
-					return
-				}
-				log.Printf("get 429 StatusTooManyRequests, need to sleep a bit")
-				time.Sleep(time.Duration(retryAfter) * time.Second)
-			}
-			log.Printf("bad status code %v for order %s", response.StatusCode, orderNumber)
-			go func(orderNumber string) {
-				strg.ordersToProcess <- orderNumber
-			}(orderNumber)
-		}
-	}
-	close(strg.ordersToProcess)
 }
 
 func (strg *HandlerWithStorage) Register(w http.ResponseWriter, r *http.Request) {

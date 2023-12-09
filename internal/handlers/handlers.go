@@ -9,7 +9,7 @@ import (
 	"errors"
 	"github.com/EvgeniyBudaev/yandex-go-musthave-diploma-tpl/internal/auth"
 	"github.com/EvgeniyBudaev/yandex-go-musthave-diploma-tpl/internal/config"
-	customError "github.com/EvgeniyBudaev/yandex-go-musthave-diploma-tpl/internal/errors"
+	wrapError "github.com/EvgeniyBudaev/yandex-go-musthave-diploma-tpl/internal/errors"
 	"github.com/EvgeniyBudaev/yandex-go-musthave-diploma-tpl/internal/storage"
 	"io"
 	"log"
@@ -252,8 +252,9 @@ func (strg *HandlerWithStorage) AddOrder(w http.ResponseWriter, r *http.Request)
 	}
 	userID := r.Context().Value(UserID).(string)
 	err = strg.storage.AddOrderForUser(r.Context(), string(data), userID)
-	var orderIsExistAnotherUserError *customError.OrderIsExistAnotherUserError
-	if errors.Is(err, customError.ErrOrderIsExistThisUser) {
+	var orderIsExistAnotherUserError *wrapError.OrderIsExistAnotherUserError
+	var orderIsExistThisUserError *wrapError.OrderIsExistThisUserError
+	if errors.As(err, &orderIsExistThisUserError) {
 		w.WriteHeader(http.StatusOK)
 		return
 	}

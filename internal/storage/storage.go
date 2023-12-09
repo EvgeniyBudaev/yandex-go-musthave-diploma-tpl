@@ -3,7 +3,7 @@ package storage
 import (
 	"context"
 	"database/sql"
-	customError "github.com/EvgeniyBudaev/yandex-go-musthave-diploma-tpl/internal/errors"
+	wrapError "github.com/EvgeniyBudaev/yandex-go-musthave-diploma-tpl/internal/errors"
 	"log"
 	"net/http"
 	"time"
@@ -119,10 +119,10 @@ func (s *DBStorage) AddOrderForUser(ctx context.Context, id string, u string) er
 	if orderUserID.Valid {
 		if orderUserID.String == u {
 			log.Printf("same userID %s for orderID %s", u, id)
-			return customError.ErrOrderIsExistThisUser
+			return wrapError.NewOrderIsExistThisUserError("this order is exist the user", err)
 		} else {
 			log.Printf("another userID %s (instead of %s) for orderID %s", orderUserID.String, u, id)
-			return customError.NewOrderIsExistAnotherUserError("this order is exist another user", err)
+			return wrapError.NewOrderIsExistAnotherUserError("this order is exist another user", err)
 		}
 	}
 	log.Printf("order with id %v not found in database", id)

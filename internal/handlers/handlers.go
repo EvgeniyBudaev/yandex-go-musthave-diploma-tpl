@@ -252,11 +252,12 @@ func (strg *HandlerWithStorage) AddOrder(w http.ResponseWriter, r *http.Request)
 	}
 	userID := r.Context().Value(UserID).(string)
 	err = strg.storage.AddOrderForUser(r.Context(), string(data), userID)
+	var orderIsExistAnotherUserError *customError.OrderIsExistAnotherUserError
 	if errors.Is(err, customError.ErrOrderIsExistThisUser) {
 		w.WriteHeader(http.StatusOK)
 		return
 	}
-	if errors.Is(err, customError.ErrOrderIsExistAnotherUser) {
+	if errors.As(err, &orderIsExistAnotherUserError) {
 		w.WriteHeader(http.StatusConflict)
 		http.Error(w, "error add order into db", http.StatusConflict)
 		return

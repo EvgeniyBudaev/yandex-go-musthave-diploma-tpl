@@ -122,7 +122,7 @@ func (s *DBStorage) AddOrderForUser(ctx context.Context, id string, u string) er
 			return customError.ErrOrderIsExistThisUser
 		} else {
 			log.Printf("another userID %s (instead of %s) for orderID %s", orderUserID.String, u, id)
-			return customError.ErrOrderIsExistAnotherUser
+			return customError.NewOrderIsExistAnotherUserError("this order is exist another user", err)
 		}
 	}
 	log.Printf("order with id %v not found in database", id)
